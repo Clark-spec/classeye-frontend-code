@@ -6,6 +6,7 @@ import { ToastProvider } from './context/ToastContext';
 import { AppLayout } from './layouts/AppLayout';
 import { AlertsPage } from './pages/AlertsPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { RoomCreatePage } from './pages/RoomCreatePage';
@@ -22,6 +23,7 @@ export default function App() {
           <AppBackground />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
                 <Route index element={<DashboardPage />} />

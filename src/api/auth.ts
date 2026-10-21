@@ -11,8 +11,25 @@ export interface LoginResponse {
   user: User;
 }
 
+export interface ResetPasswordPayload {
+  name: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
 export async function loginRequest(payload: LoginPayload): Promise<LoginResponse> {
   const { data } = await api.post<LoginResponse>('/login', payload);
+  return data;
+}
+
+export async function resetPasswordRequest(
+  payload: ResetPasswordPayload
+): Promise<ResetPasswordResponse> {
+  const { data } = await api.post<ResetPasswordResponse>('/forgot-password', payload);
   return data;
 }
 

@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '../api/client';
 import { LogoIcon } from '../components/LogoIcon';
 import { PasswordInput } from '../components/PasswordInput';
@@ -130,7 +130,12 @@ export function LoginPage() {
             </form>
 
             <p className="mt-5 text-center text-sm text-ink-muted">
-              Contact the admin to reset your password.
+              <Link
+                to="/forgot-password"
+                className="font-semibold text-brand transition hover:text-brand-dark"
+              >
+                Forgot password?
+              </Link>
             </p>
           </motion.div>
         </motion.div>
