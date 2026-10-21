@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 140" width="520" height="140" role="img" aria-label="Class Eye">
+  <defs>
+    <linearGradient id="navBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14908A"/>
+      <stop offset="1" stop-color="#07524F"/>
+    </linearGradient>
+  </defs>
+  <g transform="scale(0.2734)">
+    <rect width="512" height="512" rx="112" fill="url(#navBg)"/>
+    <g fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M92 156V116Q92 92 116 92H156"/>
+      <path d="M356 92H396Q420 92 420 116V156"/>
+      <path d="M420 356V396Q420 420 396 420H356"/>
+      <path d="M156 420H116Q92 420 92 396V356"/>
+    </g>
+    <path d="M110 256Q256 118 402 256Q256 394 110 256Z" fill="#fff"/>
+    <circle cx="256" cy="256" r="60" fill="#0B6F6B"/>
+    <g fill="#D9EBE8">
+      <rect x="222" y="222" width="30" height="30" rx="7"/>
+      <rect x="222" y="260" width="30" height="30" rx="7"/>
+      <rect x="260" y="260" width="30" height="30" rx="7"/>
+    </g>
+    <rect x="260" y="222" width="30" height="30" rx="7" fill="#F5B93A"/>
+  </g>
+  <text x="166" y="86" font-family="'DM Sans', 'Segoe UI', Arial, sans-serif" font-size="60" font-weight="700" fill="#12302E">Class <tspan fill="#0B6F6B">Eye</tspan></text>
+</svg>

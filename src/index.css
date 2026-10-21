@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-brand-bg font-sans text-sm text-ink;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  ::selection {
+    @apply bg-brand-light text-brand-dark;
+  }
+
+  :where(a, button, input, select, textarea):focus-visible {
+    outline: 2px solid rgba(11, 111, 107, 0.7);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply rounded-2xl border border-white/60 bg-white/90 shadow-[0_8px_32px_rgba(11,111,107,0.12)];
+  }
+
+  .glass-strong {
+    @apply rounded-2xl border border-white/70 bg-white/90 shadow-[0_16px_48px_rgba(11,111,107,0.16)];
+  }
+
+  .glass-nav {
+    @apply rounded-none border-x-0 border-t-0 border-b border-white/60 bg-white/90 shadow-[0_4px_24px_rgba(11,111,107,0.08)];
+  }
+
+  .skeleton {
+    @apply rounded-lg bg-[linear-gradient(90deg,rgba(217,235,232,0.5)_25%,rgba(255,255,255,0.85)_50%,rgba(217,235,232,0.5)_75%)] bg-[length:200%_100%] animate-shimmer;
+  }
+
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass {
+      @apply bg-white/55 backdrop-blur-xl;
+    }
+
+    .glass-strong {
+      @apply bg-white/80 backdrop-blur-2xl;
+    }
+
+    .glass-nav {
+      @apply bg-white/55 backdrop-blur-xl;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-shimmer,
+  .animate-pulse-dot,
+  .animate-fade-up {
+    animation: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
