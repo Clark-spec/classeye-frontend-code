@@ -23,7 +23,7 @@ export function RoomListItem({ room }: { room: Room }) {
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-ink">{room.name}</p>
         <p className="mt-0.5 line-clamp-2 leading-snug text-sm text-ink-muted">
-          Floor {room.floor} A� {room.people_count} {peopleLabel} A� {room.building}
+          Floor {room.floor} · {room.people_count} {peopleLabel} · {room.building}
         </p>
       </div>
 
