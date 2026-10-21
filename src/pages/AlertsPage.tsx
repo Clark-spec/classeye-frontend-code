@@ -41,7 +41,7 @@ export function AlertsPage() {
       </div>
 
       {loading && (
-        <div className="space-y-3">
+        <div className="grid gap-4 lg:grid-cols-2">
           {[0, 1].map((item) => (
             <Skeleton key={item} className="h-36 w-full rounded-2xl" />
           ))}
@@ -70,7 +70,7 @@ export function AlertsPage() {
       )}
 
       {!loading && !error && alerts.length > 0 && (
-        <Stagger className="space-y-3">
+        <Stagger className="grid gap-4 lg:grid-cols-2">
           {alerts.map((alert) => (
             <StaggerItem key={alert.id}>
               <article className="glass p-4 sm:p-5">

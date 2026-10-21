@@ -167,7 +167,7 @@ export function RoomsPage() {
       </section>
 
       {loading && (
-        <div className="space-y-2">
+        <div className="grid gap-2 lg:grid-cols-2">
           {[0, 1, 2, 3, 4].map((item) => (
             <Skeleton key={item} className="h-[4.25rem] w-full rounded-xl" />
           ))}
@@ -206,7 +206,7 @@ export function RoomsPage() {
 
       {!loading && !error && rooms.length > 0 && (
         <motion.div
-          className="space-y-2"
+          className="grid gap-2 lg:grid-cols-2"
           variants={staggerContainer}
           initial="hidden"
           animate="show"
