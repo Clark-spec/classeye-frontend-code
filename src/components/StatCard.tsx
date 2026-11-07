@@ -55,7 +55,11 @@ export function StatCard({
     >
       <Link
         to={to}
-        className="glass group flex h-full flex-col p-4 transition-shadow hover:shadow-[0_16px_40px_rgba(11,111,107,0.18)] sm:p-5"
+        className={`group flex h-full flex-col p-4 transition-shadow hover:shadow-[0_16px_40px_rgba(11,111,107,0.18)] sm:p-5 ${
+          wiggle
+            ? 'alert-card hover:shadow-[0_16px_40px_rgba(180,35,24,0.28)]'
+            : 'glass'
+        }`}
       >
         <div className="flex items-start justify-between gap-3">
           <motion.div

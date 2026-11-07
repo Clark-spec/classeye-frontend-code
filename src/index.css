@@ -42,6 +42,10 @@
     @apply rounded-none border-x-0 border-t-0 border-b border-white/60 bg-white/90 shadow-[0_4px_24px_rgba(11,111,107,0.08)];
   }
 
+  .alert-card {
+    @apply relative overflow-hidden rounded-2xl border-2 border-danger bg-danger-light shadow-[0_10px_28px_rgba(180,35,24,0.24)] animate-alert-glow;
+  }
+
   .skeleton {
     @apply rounded-lg bg-[linear-gradient(90deg,rgba(217,235,232,0.5)_25%,rgba(255,255,255,0.85)_50%,rgba(217,235,232,0.5)_75%)] bg-[length:200%_100%] animate-shimmer;
   }
@@ -65,7 +69,8 @@
   .animate-float,
   .animate-shimmer,
   .animate-pulse-dot,
-  .animate-fade-up {
+  .animate-fade-up,
+  .animate-alert-glow {
     animation: none !important;
   }
 

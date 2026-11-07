@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { fetchAlerts } from '../api/dashboard';
 import { useAuth } from '../context/AuthContext';
+import { AnimatedNumber } from './AnimatedNumber';
 import { ConfirmModal } from './ConfirmModal';
 import { LogoIcon } from './LogoIcon';
 
@@ -22,7 +23,9 @@ function AlertBadge({ count }: { count: number }) {
   return (
     <span className="relative inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-danger px-1.5 py-0.5 text-xs font-bold leading-none text-white">
       <span className="absolute inset-0 animate-pulse-dot rounded-full bg-danger" aria-hidden="true" />
-      <span className="relative z-10">{count}</span>
+      <span className="relative z-10">
+        <AnimatedNumber value={count} duration={500} />
+      </span>
     </span>
   );
 }

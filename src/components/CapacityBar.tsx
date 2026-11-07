@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface CapacityBarProps {
   people: number;
@@ -17,7 +18,7 @@ export function CapacityBar({ people, capacity, showLabel = true }: CapacityBarP
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm font-medium text-ink-muted">Occupancy</span>
           <span className={`text-sm font-semibold ${over ? 'text-danger' : 'text-ink'}`}>
-            {people} / {capacity}
+            <AnimatedNumber value={people} /> / <AnimatedNumber value={capacity} />
           </span>
         </div>
       )}
@@ -42,7 +43,8 @@ export function CapacityBar({ people, capacity, showLabel = true }: CapacityBarP
           animate={{ opacity: 1, y: 0 }}
           className="mt-2 text-sm font-medium text-danger"
         >
-          Over capacity by {people - capacity} {people - capacity === 1 ? 'person' : 'people'}
+          Over capacity by <AnimatedNumber value={people - capacity} />{' '}
+          {people - capacity === 1 ? 'person' : 'people'}
         </motion.p>
       )}
     </div>

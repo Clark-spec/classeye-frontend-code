@@ -55,12 +55,17 @@ module.exports = {
           '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        'alert-glow': {
+          '0%, 100%': { boxShadow: '0 8px 24px rgba(180, 35, 24, 0.2)' },
+          '50%': { boxShadow: '0 12px 36px rgba(180, 35, 24, 0.38)' },
+        },
       },
       animation: {
         float: 'float 18s ease-in-out infinite',
         shimmer: 'shimmer 1.4s linear infinite',
         'pulse-dot': 'pulse-dot 1.8s ease-out infinite',
         'fade-up': 'fade-up 0.35s ease-out both',
+        'alert-glow': 'alert-glow 1.8s ease-in-out infinite',
       },
     },
   },

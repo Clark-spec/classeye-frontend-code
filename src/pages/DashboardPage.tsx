@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchDashboard } from '../api/dashboard';
 import { getApiErrorMessage } from '../api/client';
+import { Reveal } from '../components/Reveal';
 import { RoomListItem } from '../components/RoomListItem';
 import { SearchInput } from '../components/SearchInput';
 import { Skeleton } from '../components/Skeleton';
@@ -50,6 +51,7 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-5">
+      <Reveal>
       <section className="glass p-5 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -87,6 +89,7 @@ export function DashboardPage() {
           </button>
         </form>
       </section>
+      </Reveal>
 
       <Stagger className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StaggerItem className="h-full">
@@ -132,6 +135,7 @@ export function DashboardPage() {
         </StaggerItem>
       </Stagger>
 
+      <Reveal>
       <section className="glass p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -188,6 +192,7 @@ export function DashboardPage() {
           )}
         </div>
       </section>
+      </Reveal>
     </div>
   );
 }

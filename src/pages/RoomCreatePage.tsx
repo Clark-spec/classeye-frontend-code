@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getApiErrorMessage, getApiFieldErrors } from '../api/client';
 import { createRoom } from '../api/rooms';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { Reveal } from '../components/Reveal';
 import { RoomForm } from '../components/RoomForm';
 import { useToast } from '../context/ToastContext';
 import type { RoomPayload } from '../types';
@@ -42,7 +43,7 @@ export function RoomCreatePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      <div>
+      <Reveal>
         <Link
           to="/rooms"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition hover:text-brand"
@@ -54,8 +55,9 @@ export function RoomCreatePage() {
         <p className="mt-1 text-sm text-ink-muted">
           Status is calculated automatically from the people count and the maintenance switch.
         </p>
-      </div>
+      </Reveal>
 
+      <Reveal>
       <section className="glass p-5 sm:p-6">
         <RoomForm
           errors={errors}
@@ -65,6 +67,7 @@ export function RoomCreatePage() {
           onCancel={() => navigate('/rooms')}
         />
       </section>
+      </Reveal>
 
       <ConfirmModal
         open={pendingValues !== null}

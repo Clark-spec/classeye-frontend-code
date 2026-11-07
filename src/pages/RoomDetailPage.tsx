@@ -5,8 +5,10 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getApiErrorMessage, getApiFieldErrors } from '../api/client';
 import { deleteRoom, fetchRoom, fetchRoomLogs, updateRoom } from '../api/rooms';
 import { ActivityList } from '../components/ActivityList';
+import { AnimatedNumber } from '../components/AnimatedNumber';
 import { CapacityBar } from '../components/CapacityBar';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { Reveal } from '../components/Reveal';
 import { RoomForm } from '../components/RoomForm';
 import { Skeleton } from '../components/Skeleton';
 import { StatusBadge } from '../components/StatusBadge';
@@ -211,7 +213,7 @@ export function RoomDetailPage() {
 
   return (
     <div className="space-y-5">
-      <div>
+      <Reveal>
         <Link
           to="/rooms"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition hover:text-brand"
@@ -219,9 +221,10 @@ export function RoomDetailPage() {
           <ArrowLeft size={16} />
           Back to Rooms
         </Link>
-      </div>
+      </Reveal>
 
-      <section className="glass p-5 sm:p-6">
+      <Reveal>
+      <section className={`p-5 sm:p-6 ${room.is_over_capacity ? 'alert-card' : 'glass'}`}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-lg font-bold text-brand-dark">
@@ -245,8 +248,11 @@ export function RoomDetailPage() {
           </div>
         </div>
       </section>
+      </Reveal>
 
-      <Tabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+      <Reveal>
+        <Tabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+      </Reveal>
 
       <AnimatePresence mode="wait" initial={false}>
         {activeTab === 'overview' && (
@@ -268,15 +274,19 @@ export function RoomDetailPage() {
                 <InfoItem label="Status">
                   <StatusBadge status={room.status} overCapacity={room.is_over_capacity} />
                 </InfoItem>
-                <InfoItem label="Capacity">{room.capacity} people</InfoItem>
-                <InfoItem label="People inside">{room.people_count}</InfoItem>
+                <InfoItem label="Capacity">
+                  <AnimatedNumber value={room.capacity} /> people
+                </InfoItem>
+                <InfoItem label="People inside">
+                  <AnimatedNumber value={room.people_count} />
+                </InfoItem>
                 <InfoItem label="Floor">Floor {room.floor}</InfoItem>
                 <InfoItem label="Building">{room.building}</InfoItem>
                 <InfoItem label="Last updated">{formatDateTime(room.updated_at)}</InfoItem>
               </div>
             </section>
 
-            <section className="glass p-5">
+            <section className={`p-5 ${room.is_over_capacity ? 'alert-card' : 'glass'}`}>
               <h2 className="text-base font-semibold text-ink">Quick summary</h2>
               <div
                 className={`mt-4 flex h-11 w-11 items-center justify-center rounded-xl ${summaryTone}`}

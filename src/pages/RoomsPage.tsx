@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { fetchRooms } from '../api/rooms';
 import { getApiErrorMessage } from '../api/client';
+import { AnimatedNumber } from '../components/AnimatedNumber';
 import { EmptyState } from '../components/EmptyState';
 import { FilterChips, type FilterOption } from '../components/FilterChips';
+import { Reveal } from '../components/Reveal';
 import { RoomListItem } from '../components/RoomListItem';
 import { SearchInput } from '../components/SearchInput';
 import { Skeleton } from '../components/Skeleton';
-import { staggerContainer, staggerItem } from '../components/Stagger';
+import { staggerItem } from '../components/Stagger';
 import type { Room, RoomStatus } from '../types';
 
 const statusOptions: FilterOption[] = [
@@ -114,11 +116,17 @@ export function RoomsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-bold text-ink sm:text-2xl">Rooms</h1>
           <p className="mt-1 text-sm text-ink-muted">
-            {loading ? 'Loading rooms...' : `${rooms.length} ${roomLabel} found`}
+            {loading ? (
+              'Loading rooms...'
+            ) : (
+              <>
+                <AnimatedNumber value={rooms.length} /> {roomLabel} found
+              </>
+            )}
           </p>
         </div>
         <Link
@@ -132,8 +140,9 @@ export function RoomsPage() {
           <Plus size={18} className="relative" />
           <span className="relative">Add Room</span>
         </Link>
-      </div>
+      </Reveal>
 
+      <Reveal>
       <section className="glass p-4 sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <SearchInput
@@ -165,6 +174,7 @@ export function RoomsPage() {
           />
         </div>
       </section>
+      </Reveal>
 
       {loading && (
         <div className="grid gap-2 lg:grid-cols-2">
@@ -205,12 +215,7 @@ export function RoomsPage() {
       )}
 
       {!loading && !error && rooms.length > 0 && (
-        <motion.div
-          className="grid gap-2 lg:grid-cols-2"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-        >
+        <div className="grid gap-2 lg:grid-cols-2">
           <AnimatePresence initial={false}>
             {rooms.map((room) => (
               <motion.div
@@ -218,14 +223,15 @@ export function RoomsPage() {
                 layout
                 variants={staggerItem}
                 initial="hidden"
-                animate="show"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.2, margin: '0px 0px -36px 0px' }}
                 exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.2 } }}
               >
                 <RoomListItem room={room} />
               </motion.div>
             ))}
           </AnimatePresence>
-        </motion.div>
+        </div>
       )}
     </div>
   );

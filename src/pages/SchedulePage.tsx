@@ -10,14 +10,16 @@ import {
   fetchSchedules,
   updateSchedule,
 } from '../api/schedules';
+import { AnimatedNumber } from '../components/AnimatedNumber';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { EmptyState } from '../components/EmptyState';
 import { FilterChips, type FilterOption } from '../components/FilterChips';
+import { Reveal } from '../components/Reveal';
 import { ScheduleCard } from '../components/ScheduleCard';
 import { ScheduleFormModal } from '../components/ScheduleFormModal';
 import { SearchInput } from '../components/SearchInput';
 import { Skeleton } from '../components/Skeleton';
-import { staggerContainer, staggerItem } from '../components/Stagger';
+import { staggerItem } from '../components/Stagger';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import type { Room, Schedule, ScheduleDay, SchedulePayload, User } from '../types';
@@ -258,15 +260,22 @@ export function SchedulePage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-bold text-ink sm:text-2xl">Schedule</h1>
           <p className="mt-1 text-sm text-ink-muted">
-            {loading
-              ? 'Loading schedules...'
-              : isAdmin
-                ? `${schedules.length} ${scheduleLabel}${hasFilters ? ' matched' : ' across all instructors'}`
-                : `${schedules.length} ${scheduleLabel} in your weekly load`}
+            {loading ? (
+              'Loading schedules...'
+            ) : isAdmin ? (
+              <>
+                <AnimatedNumber value={schedules.length} /> {scheduleLabel}
+                {hasFilters ? ' matched' : ' across all instructors'}
+              </>
+            ) : (
+              <>
+                <AnimatedNumber value={schedules.length} /> {scheduleLabel} in your weekly load
+              </>
+            )}
           </p>
         </div>
 
@@ -284,8 +293,9 @@ export function SchedulePage() {
             <span className="relative">Add Schedule</span>
           </button>
         )}
-      </div>
+      </Reveal>
 
+      <Reveal>
       <section className="glass p-4 sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <SearchInput
@@ -331,6 +341,7 @@ export function SchedulePage() {
           />
         </div>
       </section>
+      </Reveal>
 
       {loading && (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -388,12 +399,7 @@ export function SchedulePage() {
       )}
 
       {!loading && !error && schedules.length > 0 && (
-        <motion.div
-          className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-        >
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <AnimatePresence initial={false}>
             {schedules.map((schedule) => (
               <motion.div
@@ -401,7 +407,8 @@ export function SchedulePage() {
                 layout
                 variants={staggerItem}
                 initial="hidden"
-                animate="show"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.18, margin: '0px 0px -40px 0px' }}
                 exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.2 } }}
               >
                 <ScheduleCard
@@ -413,7 +420,7 @@ export function SchedulePage() {
               </motion.div>
             ))}
           </AnimatePresence>
-        </motion.div>
+        </div>
       )}
 
       {formOpen && (

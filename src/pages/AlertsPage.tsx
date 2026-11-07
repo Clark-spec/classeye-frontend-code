@@ -3,8 +3,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchAlerts } from '../api/dashboard';
 import { getApiErrorMessage } from '../api/client';
+import { AnimatedNumber } from '../components/AnimatedNumber';
 import { CapacityBar } from '../components/CapacityBar';
 import { EmptyState } from '../components/EmptyState';
+import { Reveal } from '../components/Reveal';
 import { Skeleton } from '../components/Skeleton';
 import { Stagger, StaggerItem } from '../components/Stagger';
 import type { Alert } from '../types';
@@ -33,12 +35,12 @@ export function AlertsPage() {
 
   return (
     <div className="space-y-5">
-      <div>
+      <Reveal>
         <h1 className="text-xl font-bold text-ink sm:text-2xl">Alerts</h1>
         <p className="mt-1 text-sm text-ink-muted">
           Rooms that currently have more people than their capacity.
         </p>
-      </div>
+      </Reveal>
 
       {loading && (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -72,16 +74,16 @@ export function AlertsPage() {
       {!loading && !error && alerts.length > 0 && (
         <Stagger className="grid gap-4 lg:grid-cols-2">
           {alerts.map((alert) => (
-            <StaggerItem key={alert.id}>
-              <article className="glass p-4 sm:p-5">
+            <StaggerItem key={alert.id} inView>
+              <article className="alert-card p-4 sm:p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-danger-light text-danger">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-danger text-white">
                       <AlertTriangle size={22} />
                     </div>
                     <div className="min-w-0">
-                      <h2 className="text-base font-semibold text-ink">{alert.name}</h2>
-                      <p className="mt-0.5 text-sm text-ink-muted">{alert.message}</p>
+                      <h2 className="text-base font-semibold text-danger">{alert.name}</h2>
+                      <p className="mt-0.5 text-sm font-medium text-danger/80">{alert.message}</p>
                       <p className="mt-1 text-sm text-ink-muted">
                         Floor {alert.floor} · {alert.building}
                       </p>
@@ -89,12 +91,13 @@ export function AlertsPage() {
                   </div>
 
                   <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                    <span className="rounded-full bg-danger-light px-2.5 py-1 text-xs font-semibold text-danger">
-                      {alert.people_count} / {alert.capacity}
+                    <span className="rounded-full border border-danger bg-white px-2.5 py-1 text-xs font-bold text-danger">
+                      <AnimatedNumber value={alert.people_count} /> /{' '}
+                      <AnimatedNumber value={alert.capacity} />
                     </span>
                     <Link
                       to={`/rooms/${alert.id}`}
-                      className="rounded-xl border border-brand px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand-light"
+                      className="rounded-xl bg-danger px-3 py-2 text-sm font-semibold text-white transition hover:bg-danger/90"
                     >
                       View room
                     </Link>

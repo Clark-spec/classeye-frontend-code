@@ -14,7 +14,11 @@ export function RoomListItem({ room }: { room: Room }) {
   return (
     <Link
       to={`/rooms/${room.id}`}
-      className="group flex items-center gap-3 rounded-xl border border-white/70 bg-white/55 p-3 transition hover:-translate-y-0.5 hover:border-brand/30 hover:bg-white/80 hover:shadow-[0_8px_20px_rgba(11,111,107,0.12)] sm:gap-4 sm:p-4"
+      className={`group flex items-center gap-3 rounded-xl p-3 transition hover:-translate-y-0.5 sm:gap-4 sm:p-4 ${
+        room.is_over_capacity
+          ? 'border-2 border-danger bg-danger-light hover:bg-[#fbd9d6] hover:shadow-[0_8px_20px_rgba(180,35,24,0.18)]'
+          : 'border border-white/70 bg-white/55 hover:border-brand/30 hover:bg-white/80 hover:shadow-[0_8px_20px_rgba(11,111,107,0.12)]'
+      }`}
     >
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-light text-sm font-bold text-brand-dark">
         {roomNumber(room.name)}

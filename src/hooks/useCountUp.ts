@@ -1,7 +1,7 @@
 import { useReducedMotion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
-export function useCountUp(target: number, duration = 800): number {
+export function useCountUp(target: number, duration = 650): number {
   const reducedMotion = useReducedMotion() ?? false;
   const [value, setValue] = useState(0);
   const currentRef = useRef(0);

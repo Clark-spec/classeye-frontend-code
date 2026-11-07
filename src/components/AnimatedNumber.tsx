@@ -1,3 +1,5 @@
+import { useInView } from 'framer-motion';
+import { useRef } from 'react';
 import { useCountUp } from '../hooks/useCountUp';
 
 interface AnimatedNumberProps {
@@ -6,8 +8,14 @@ interface AnimatedNumberProps {
   className?: string;
 }
 
-export function AnimatedNumber({ value, duration = 800, className = '' }: AnimatedNumberProps) {
-  const current = useCountUp(value, duration);
+export function AnimatedNumber({ value, duration = 650, className = '' }: AnimatedNumberProps) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.4 });
+  const current = useCountUp(inView ? value : 0, duration);
 
-  return <span className={`tabular-nums ${className}`}>{Math.round(current)}</span>;
+  return (
+    <span ref={ref} className={`tabular-nums ${className}`}>
+      {Math.round(current)}
+    </span>
+  );
 }

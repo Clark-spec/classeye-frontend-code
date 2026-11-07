@@ -16,7 +16,7 @@ interface ScheduleCardProps {
 
 export function ScheduleCard({ schedule, canManage, onEdit, onDelete }: ScheduleCardProps) {
   return (
-    <article className="glass h-full p-4 transition-shadow hover:shadow-[0_14px_40px_rgba(11,111,107,0.16)] sm:p-5">
+    <article className="glass h-full p-4 transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(11,111,107,0.16)] sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">

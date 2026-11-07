@@ -52,9 +52,10 @@ export function ActivityList({
       {logs.map((log, index) => (
         <motion.li
           key={log.id}
-          initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.04, duration: 0.25, ease: 'easeOut' }}
+          initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ delay: reducedMotion ? 0 : index * 0.04, duration: 0.35, ease: 'easeOut' }}
           className="flex gap-3"
         >
           <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-brand" aria-hidden="true" />
