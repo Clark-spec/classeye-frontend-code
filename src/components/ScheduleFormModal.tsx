@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { AlertCircle, CalendarPlus, Loader2, X } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
+import { springPanel } from '../lib/motion';
 import type { Room, ScheduleDay, SchedulePayload, User } from '../types';
 import { SCHEDULE_DAYS } from '../types';
 import { DAY_FULL_LABELS } from '../utils/schedule';
@@ -17,9 +18,8 @@ interface ScheduleFormModalProps {
   onSubmit: (values: SchedulePayload) => void;
 }
 
-const inputClass =
-  'w-full rounded-xl border border-brand-light bg-white px-3 py-2.5 text-sm text-ink transition-shadow placeholder:text-ink-muted/70 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 focus:shadow-[0_0_0_4px_rgba(11,111,107,0.12)]';
-const errorInputClass = 'border-danger focus:border-danger focus:ring-danger/20';
+const inputClass = 'field';
+const errorInputClass = 'field-error';
 
 function FieldError({ messages }: { messages?: string[] }) {
   if (!messages || messages.length === 0) {
@@ -125,7 +125,7 @@ export function ScheduleFormModal({
         aria-hidden={locked || undefined}
         initial={{ opacity: 0, y: 24, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ type: 'spring', stiffness: 240, damping: 26 }}
+        transition={springPanel}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
@@ -145,7 +145,7 @@ export function ScheduleFormModal({
             type="button"
             onClick={onClose}
             disabled={submitting || locked}
-            className="rounded-lg p-1 text-ink-muted transition hover:bg-white/60 hover:text-ink disabled:cursor-not-allowed"
+            className="icon-btn h-8 w-8 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Close schedule form"
           >
             <X size={18} />
@@ -280,10 +280,10 @@ export function ScheduleFormModal({
                     type="button"
                     aria-pressed={active}
                     onClick={() => toggleDay(day)}
-                    className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition ${
+                    className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition-[background-color,color,border-color,box-shadow,transform] duration-200 ease-soft active:scale-[0.97] ${
                       active
-                        ? 'bg-brand text-white shadow-sm'
-                        : 'border border-brand-light bg-white text-ink-muted hover:text-ink'
+                        ? 'bg-brand text-white shadow-sm hover:bg-brand-dark'
+                        : 'border border-brand-light bg-white text-ink-muted hover:border-brand/30 hover:bg-brand-light/50 hover:text-brand-dark hover:shadow-sm'
                     }`}
                   >
                     {DAY_FULL_LABELS[day]}
@@ -351,14 +351,14 @@ export function ScheduleFormModal({
               type="button"
               onClick={onClose}
               disabled={submitting || locked}
-              className="rounded-xl border border-brand-light px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-brand-surface disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting || locked || instructors.length === 0 || rooms.length === 0}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-primary px-5"
             >
               {submitting && <Loader2 size={16} className="animate-spin" />}
               {submitting ? 'Saving...' : mode === 'create' ? 'Add schedule' : 'Save changes'}

@@ -16,7 +16,7 @@ export function NotFoundPage() {
       </p>
       <Link
         to="/"
-        className="mt-6 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+        className="btn-primary mt-6"
       >
         Back to dashboard
       </Link>

@@ -8,6 +8,7 @@ import { ConfirmModal } from '../components/ConfirmModal';
 import { LogoIcon } from '../components/LogoIcon';
 import { PasswordInput } from '../components/PasswordInput';
 import { useToast } from '../context/ToastContext';
+import { EASE_SOFT } from '../lib/motion';
 
 function FieldError({ messages }: { messages?: string[] }) {
   if (!messages || messages.length === 0) {
@@ -84,9 +85,12 @@ export function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <Link
           to="/login"
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition hover:text-brand"
+          className="group mb-4 inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-ink-muted transition-colors duration-150 ease-soft hover:text-brand"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft
+            size={16}
+            className="transition-transform duration-150 ease-soft group-hover:-translate-x-0.5"
+          />
           Back to sign in
         </Link>
 
@@ -122,11 +126,7 @@ export function ForgotPasswordPage() {
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   placeholder="e.g. Ms. Reyes"
-                  className={`w-full rounded-xl border bg-white px-3 py-2.5 text-sm text-ink transition-shadow placeholder:text-ink-muted/70 focus:outline-none focus:ring-2 ${
-                    errors.name
-                      ? 'border-danger focus:border-danger focus:ring-danger/20 focus:shadow-[0_0_0_4px_rgba(180,35,24,0.1)]'
-                      : 'border-brand-light focus:border-brand focus:ring-brand/20 focus:shadow-[0_0_0_4px_rgba(11,111,107,0.12)]'
-                  }`}
+                  className={`field ${errors.name ? 'field-error' : ''}`}
                 />
                 <FieldError messages={errors.name} />
               </div>
@@ -171,7 +171,7 @@ export function ForgotPasswordPage() {
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.2, ease: EASE_SOFT }}
                     className="rounded-xl bg-danger-light px-3 py-2.5 text-sm text-danger"
                     role="alert"
                   >
@@ -183,9 +183,8 @@ export function ForgotPasswordPage() {
               <motion.button
                 type="submit"
                 disabled={submitting}
-                whileHover={reducedMotion ? undefined : { y: -1 }}
                 whileTap={reducedMotion ? undefined : { scale: 0.98 }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(11,111,107,0.22)] transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
+                className="btn-primary w-full"
               >
                 <KeyRound size={16} />
                 Continue

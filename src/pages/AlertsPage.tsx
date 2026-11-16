@@ -56,7 +56,7 @@ export function AlertsPage() {
           <button
             type="button"
             onClick={() => void load()}
-            className="mt-4 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            className="btn-primary mt-4"
           >
             Retry
           </button>
@@ -97,7 +97,7 @@ export function AlertsPage() {
                     </span>
                     <Link
                       to={`/rooms/${alert.id}`}
-                      className="rounded-xl bg-danger px-3 py-2 text-sm font-semibold text-white transition hover:bg-danger/90"
+                      className="btn-danger px-3 py-2"
                     >
                       View room
                     </Link>

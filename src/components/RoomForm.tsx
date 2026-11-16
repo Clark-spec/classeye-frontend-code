@@ -24,9 +24,8 @@ const defaultValues: RoomPayload = {
   is_maintenance: false,
 };
 
-const inputClass =
-  'w-full rounded-xl border border-brand-light bg-white px-3 py-2.5 text-sm text-ink transition-shadow placeholder:text-ink-muted/70 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 focus:shadow-[0_0_0_4px_rgba(11,111,107,0.12)]';
-const errorInputClass = 'border-danger focus:border-danger focus:ring-danger/20';
+const inputClass = 'field';
+const errorInputClass = 'field-error';
 
 function FieldError({ messages }: { messages?: string[] }) {
   if (!messages || messages.length === 0) {
@@ -155,7 +154,7 @@ export function RoomForm({
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/70 bg-white/50 px-4 py-3">
+      <div className="rounded-xl border border-white/70 bg-white/60 px-4 py-3 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-ink">Under maintenance</p>
@@ -168,12 +167,12 @@ export function RoomForm({
             role="switch"
             aria-checked={values.is_maintenance}
             onClick={() => update('is_maintenance', !values.is_maintenance)}
-            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-[background-color,box-shadow] duration-200 ease-soft hover:ring-2 hover:ring-brand/20 ${
               values.is_maintenance ? 'bg-brand' : 'bg-brand-light'
             }`}
           >
             <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ease-soft ${
                 values.is_maintenance ? 'translate-x-5' : 'translate-x-0.5'
               }`}
             />
@@ -188,7 +187,7 @@ export function RoomForm({
             <button
               type="button"
               onClick={onDelete}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-danger px-4 py-2.5 text-sm font-semibold text-danger transition hover:bg-danger-light sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-danger px-4 py-2.5 text-sm font-semibold text-danger transition-[transform,background-color,box-shadow] duration-180 ease-soft hover:-translate-y-0.5 hover:bg-danger-light hover:shadow-sm sm:w-auto"
             >
               <Trash2 size={16} />
               Delete room
@@ -202,7 +201,7 @@ export function RoomForm({
               type="button"
               onClick={onCancel}
               disabled={submitting}
-              className="rounded-xl border border-brand-light px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-brand-surface disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-secondary"
             >
               Cancel
             </button>
@@ -210,9 +209,11 @@ export function RoomForm({
           <button
             type="submit"
             disabled={submitting || success}
-            className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition disabled:cursor-not-allowed ${
-              submitting ? 'opacity-60' : ''
-            } ${success ? 'bg-empty-text hover:bg-empty-text' : 'bg-brand hover:bg-brand-dark'}`}
+            className={
+              success
+                ? 'inline-flex items-center justify-center gap-2 rounded-xl bg-empty-text px-5 py-2.5 text-sm font-semibold text-white'
+                : `btn-primary px-5 ${submitting ? 'opacity-60' : ''}`
+            }
           >
             <AnimatePresence mode="wait" initial={false}>
               {submitting && (

@@ -2,6 +2,7 @@ import { motion, useAnimationControls, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, type LucideIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { EASE_SOFT } from '../lib/motion';
 import { AnimatedNumber } from './AnimatedNumber';
 import { Skeleton } from './Skeleton';
 
@@ -43,22 +44,18 @@ export function StatCard({
 
     void iconControls.start({
       rotate: [0, -8, 8, -4, 4, 0],
-      transition: { duration: 0.6, ease: 'easeInOut' },
+      transition: { duration: 0.6, ease: EASE_SOFT },
     });
   }, [wiggle, reducedMotion, loading, iconControls]);
 
   return (
-    <motion.div
-      whileHover={reducedMotion ? undefined : { y: -4 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-      className="h-full"
-    >
+    <div className="h-full">
       <Link
         to={to}
-        className={`group flex h-full flex-col p-4 transition-shadow hover:shadow-[0_16px_40px_rgba(11,111,107,0.18)] sm:p-5 ${
+        className={`group flex h-full flex-col p-4 sm:p-5 ${
           wiggle
-            ? 'alert-card hover:shadow-[0_16px_40px_rgba(180,35,24,0.28)]'
-            : 'glass'
+            ? 'alert-card transition-[transform,box-shadow] duration-200 ease-soft hover:-translate-y-1 hover:shadow-[0_18px_44px_rgba(180,35,24,0.32)]'
+            : 'glass card-interactive'
         }`}
       >
         <div className="flex items-start justify-between gap-3">
@@ -70,7 +67,7 @@ export function StatCard({
           </motion.div>
           <ArrowUpRight
             size={18}
-            className="text-ink-muted transition group-hover:text-brand"
+            className="text-ink-muted transition-[transform,color] duration-200 ease-soft group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand"
             aria-hidden="true"
           />
         </div>
@@ -85,6 +82,6 @@ export function StatCard({
           <p className="mt-2 text-sm font-medium text-ink-muted">{label}</p>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

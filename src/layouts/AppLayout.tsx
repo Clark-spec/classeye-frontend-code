@@ -1,5 +1,6 @@
 import { AnimatePresence } from 'framer-motion';
 import { Outlet, useLocation } from 'react-router-dom';
+import { ChatWidget } from '../components/ChatWidget';
 import { Navbar } from '../components/Navbar';
 import { PageTransition } from '../components/PageTransition';
 
@@ -16,6 +17,7 @@ export function AppLayout() {
           </PageTransition>
         </AnimatePresence>
       </main>
+      <ChatWidget />
     </div>
   );
 }

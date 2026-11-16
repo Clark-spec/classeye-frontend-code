@@ -37,6 +37,21 @@ module.exports = {
       },
       boxShadow: {
         card: '0 12px 30px -18px rgba(18, 48, 46, 0.35)',
+        'card-hover':
+          'inset 0 1px 0 rgba(255,255,255,0.92), 0 1px 2px rgba(11,111,107,0.08), 0 24px 52px -22px rgba(11,111,107,0.48)',
+        glass:
+          'inset 0 1px 0 rgba(255,255,255,0.92), 0 1px 2px rgba(11,111,107,0.06), 0 18px 40px -22px rgba(11,111,107,0.38)',
+        'glass-strong':
+          'inset 0 1px 0 rgba(255,255,255,0.95), 0 1px 2px rgba(11,111,107,0.07), 0 24px 60px -24px rgba(11,111,107,0.42)',
+      },
+      transitionTimingFunction: {
+        soft: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        snap: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
+      transitionDuration: {
+        fast: '120ms',
+        base: '180ms',
+        slow: '280ms',
       },
       keyframes: {
         float: {

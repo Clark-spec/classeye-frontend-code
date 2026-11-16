@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
+import { springPanel } from '../lib/motion';
 
 export type ToastType = 'success' | 'error' | 'info';
 
@@ -33,7 +34,7 @@ export function Toast({ toast, onClose, duration = TOAST_DURATION }: ToastProps)
       initial={{ opacity: 0, x: 24, y: -10 }}
       animate={{ opacity: 1, x: 0, y: 0 }}
       exit={{ opacity: 0, x: 24, y: -6 }}
-      transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+      transition={springPanel}
       className={`glass-strong pointer-events-auto relative flex w-full max-w-sm items-start gap-3 overflow-hidden px-4 py-3 ${tone.container}`}
       role="status"
       aria-live="polite"
@@ -43,7 +44,7 @@ export function Toast({ toast, onClose, duration = TOAST_DURATION }: ToastProps)
       <button
         type="button"
         onClick={() => onClose(toast.id)}
-        className="rounded-lg p-0.5 text-ink-muted transition hover:bg-white/60 hover:text-ink"
+        className="icon-btn h-7 w-7"
         aria-label="Dismiss notification"
       >
         <X size={16} />

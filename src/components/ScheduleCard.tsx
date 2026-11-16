@@ -16,11 +16,11 @@ interface ScheduleCardProps {
 
 export function ScheduleCard({ schedule, canManage, onEdit, onDelete }: ScheduleCardProps) {
   return (
-    <article className="glass h-full p-4 transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(11,111,107,0.16)] sm:p-5">
+    <article className="glass card-interactive group h-full p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-lg bg-brand px-2.5 py-1 text-xs font-bold tracking-wide text-white">
+            <span className="rounded-lg bg-brand px-2.5 py-1 text-xs font-bold tracking-wide text-white shadow-sm transition-colors duration-200 ease-soft group-hover:bg-brand-dark">
               {schedule.subject_code}
             </span>
             <span className="rounded-full bg-brand-surface px-2.5 py-1 text-xs font-semibold text-ink-muted">
@@ -37,7 +37,7 @@ export function ScheduleCard({ schedule, canManage, onEdit, onDelete }: Schedule
             <button
               type="button"
               onClick={() => onEdit(schedule)}
-              className="rounded-lg p-2 text-ink-muted transition hover:bg-brand-light hover:text-brand-dark"
+              className="rounded-lg p-2 text-ink-muted transition-colors duration-150 ease-soft hover:bg-brand-light hover:text-brand-dark"
               aria-label={`Edit ${schedule.subject_code}`}
             >
               <Pencil size={16} />
@@ -45,7 +45,7 @@ export function ScheduleCard({ schedule, canManage, onEdit, onDelete }: Schedule
             <button
               type="button"
               onClick={() => onDelete(schedule)}
-              className="rounded-lg p-2 text-ink-muted transition hover:bg-danger-light hover:text-danger"
+              className="rounded-lg p-2 text-ink-muted transition-colors duration-150 ease-soft hover:bg-danger-light hover:text-danger"
               aria-label={`Delete ${schedule.subject_code}`}
             >
               <Trash2 size={16} />

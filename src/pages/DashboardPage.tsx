@@ -1,8 +1,10 @@
-import { AlertTriangle, Building2, DoorOpen, Users } from 'lucide-react';
+import { AlertTriangle, BrainCircuit, Building2, DoorOpen, Users } from 'lucide-react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchDashboard } from '../api/dashboard';
 import { getApiErrorMessage } from '../api/client';
+import { fetchInsights } from '../api/insights';
+import { InsightRow } from '../components/InsightRow';
 import { Reveal } from '../components/Reveal';
 import { RoomListItem } from '../components/RoomListItem';
 import { SearchInput } from '../components/SearchInput';
@@ -10,12 +12,13 @@ import { Skeleton } from '../components/Skeleton';
 import { Stagger, StaggerItem } from '../components/Stagger';
 import { StatCard } from '../components/StatCard';
 import { useAuth } from '../context/AuthContext';
-import type { DashboardData } from '../types';
+import type { DashboardData, InsightsSummary } from '../types';
 
 export function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [insights, setInsights] = useState<InsightsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -24,13 +27,20 @@ export function DashboardPage() {
     setLoading(true);
     setError(null);
 
-    try {
-      setData(await fetchDashboard());
-    } catch (requestError) {
-      setError(getApiErrorMessage(requestError, 'Unable to load the dashboard.'));
-    } finally {
-      setLoading(false);
+    // Insights are advisory: a failure there must never hide the dashboard.
+    const [dashboardResult, insightsResult] = await Promise.allSettled([
+      fetchDashboard(),
+      fetchInsights(),
+    ]);
+
+    if (dashboardResult.status === 'fulfilled') {
+      setData(dashboardResult.value);
+    } else {
+      setError(getApiErrorMessage(dashboardResult.reason, 'Unable to load the dashboard.'));
     }
+
+    setInsights(insightsResult.status === 'fulfilled' ? insightsResult.value : null);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -83,7 +93,7 @@ export function DashboardPage() {
           />
           <button
             type="submit"
-            className="rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            className="btn-primary px-5"
           >
             Search
           </button>
@@ -135,6 +145,61 @@ export function DashboardPage() {
         </StaggerItem>
       </Stagger>
 
+      {loading && <Skeleton className="h-52 w-full rounded-2xl" />}
+
+      {!loading && insights && (
+        <Reveal>
+          <section className="glass p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand-dark">
+                  <BrainCircuit size={22} aria-hidden="true" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-ink">Class Eye Insights</h2>
+                  <p className="mt-0.5 text-sm text-ink-muted">
+                    AI-assisted forecast for the next {insights.forecast_minutes} minutes
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                <span
+                  className={`rounded-full px-2.5 py-1 ${
+                    insights.at_risk > 0
+                      ? 'bg-danger-light text-danger'
+                      : 'bg-empty-bg text-empty-text'
+                  }`}
+                >
+                  {insights.at_risk} at risk
+                </span>
+                <span className="rounded-full bg-brand-light px-2.5 py-1 text-brand-dark">
+                  {insights.anomalies} unusual {insights.anomalies === 1 ? 'change' : 'changes'}
+                </span>
+                <span className="rounded-full bg-brand-surface px-2.5 py-1 text-ink-muted">
+                  Avg. use {Math.round(insights.average_utilization * 100)}%
+                </span>
+              </div>
+            </div>
+
+            <p className="mt-4 rounded-xl bg-brand-surface px-3 py-2.5 text-sm text-ink">
+              {insights.headline}
+            </p>
+
+            <div className="mt-3 space-y-2">
+              {insights.rooms.slice(0, 4).map((insight) => (
+                <InsightRow key={insight.room_id} insight={insight} />
+              ))}
+            </div>
+
+            <p className="mt-3 text-xs text-ink-muted">
+              Advisory only. Insights are computed from recorded occupancy snapshots and never
+              change a room automatically.
+            </p>
+          </section>
+        </Reveal>
+      )}
+
       <Reveal>
       <section className="glass p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -144,7 +209,7 @@ export function DashboardPage() {
           </div>
           <Link
             to="/rooms"
-            className="text-sm font-semibold text-brand transition hover:text-brand-dark"
+            className="text-sm font-semibold text-brand underline-offset-4 transition-colors duration-150 ease-soft hover:text-brand-dark hover:underline"
           >
             View all
           </Link>
@@ -168,7 +233,7 @@ export function DashboardPage() {
               <button
                 type="button"
                 onClick={() => void load()}
-                className="mt-3 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark"
+                className="btn-primary mt-3"
               >
                 Retry
               </button>
@@ -186,7 +251,7 @@ export function DashboardPage() {
           )}
 
           {!loading && !error && data && data.recent_rooms.length === 0 && (
-            <p className="rounded-xl bg-white/50 px-4 py-6 text-center text-sm text-ink-muted">
+            <p className="rounded-xl border border-white/60 bg-white/60 px-4 py-6 text-center text-sm text-ink-muted">
               No rooms have been added yet.
             </p>
           )}

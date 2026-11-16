@@ -46,9 +46,12 @@ export function RoomCreatePage() {
       <Reveal>
         <Link
           to="/rooms"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition hover:text-brand"
+          className="group inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-ink-muted transition-colors duration-150 ease-soft hover:text-brand"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft
+            size={16}
+            className="transition-transform duration-150 ease-soft group-hover:-translate-x-0.5"
+          />
           Back to Rooms
         </Link>
         <h1 className="mt-3 text-xl font-bold text-ink sm:text-2xl">Add Room</h1>

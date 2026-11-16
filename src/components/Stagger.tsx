@@ -1,21 +1,22 @@
 import { motion, type Variants } from 'framer-motion';
 import type { ReactNode } from 'react';
+import { EASE_SOFT } from '../lib/motion';
 
 export const staggerContainer: Variants = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.07,
+      staggerChildren: 0.05,
     },
   },
 };
 
 export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 28 },
+  hidden: { opacity: 0, y: 16 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: 'easeOut' },
+    transition: { duration: 0.32, ease: EASE_SOFT },
   },
 };
 

@@ -6,6 +6,7 @@ import { getApiErrorMessage } from '../api/client';
 import { LogoIcon } from '../components/LogoIcon';
 import { PasswordInput } from '../components/PasswordInput';
 import { useAuth } from '../context/AuthContext';
+import { EASE_SOFT } from '../lib/motion';
 
 export function LoginPage() {
   const { user, loading, login } = useAuth();
@@ -86,7 +87,7 @@ export function LoginPage() {
                   value={staffId}
                   onChange={(event) => setStaffId(event.target.value)}
                   placeholder="e.g. T-20418"
-                  className="w-full rounded-xl border border-brand-light bg-white px-3 py-2.5 text-sm text-ink transition-shadow placeholder:text-ink-muted/70 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 focus:shadow-[0_0_0_4px_rgba(11,111,107,0.12)]"
+                  className="field"
                 />
               </div>
 
@@ -108,7 +109,7 @@ export function LoginPage() {
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.2, ease: EASE_SOFT }}
                     className="rounded-xl bg-danger-light px-3 py-2.5 text-sm text-danger"
                     role="alert"
                   >
@@ -120,9 +121,8 @@ export function LoginPage() {
               <motion.button
                 type="submit"
                 disabled={submitting}
-                whileHover={reducedMotion ? undefined : { y: -1 }}
                 whileTap={reducedMotion ? undefined : { scale: 0.98 }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(11,111,107,0.22)] transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
+                className="btn-primary w-full"
               >
                 {submitting && <Loader2 size={16} className="animate-spin" />}
                 {submitting ? 'Signing in...' : 'Sign in'}
@@ -132,7 +132,7 @@ export function LoginPage() {
             <p className="mt-5 text-center text-sm text-ink-muted">
               <Link
                 to="/forgot-password"
-                className="font-semibold text-brand transition hover:text-brand-dark"
+                className="font-semibold text-brand underline-offset-4 transition-colors duration-150 ease-soft hover:text-brand-dark hover:underline"
               >
                 Forgot password?
               </Link>

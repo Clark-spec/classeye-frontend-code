@@ -131,7 +131,7 @@ export function RoomsPage() {
         </div>
         <Link
           to="/rooms/new"
-          className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-brand-dark"
+          className="btn-primary group relative overflow-hidden"
         >
           <span
             className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"
@@ -155,7 +155,7 @@ export function RoomsPage() {
             value={floorParam}
             onChange={(event) => updateParam('floor', event.target.value)}
             aria-label="Filter by floor"
-            className="rounded-xl border border-brand-light bg-white px-3 py-2.5 text-sm text-ink transition-shadow focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 focus:shadow-[0_0_0_4px_rgba(11,111,107,0.12)] lg:w-44"
+            className="field lg:w-44"
           >
             <option value="">All floors</option>
             {floorOptions.map((option) => (
@@ -190,7 +190,7 @@ export function RoomsPage() {
           <button
             type="button"
             onClick={() => setReloadKey((current) => current + 1)}
-            className="mt-4 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            className="btn-primary mt-4"
           >
             Retry
           </button>
@@ -205,7 +205,7 @@ export function RoomsPage() {
           action={
             <Link
               to="/rooms/new"
-              className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+              className="btn-primary"
             >
               <Plus size={18} />
               Add Room

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { springSnap } from '../lib/motion';
 
 export interface TabItem {
   id: string;
@@ -26,15 +27,15 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
             onClick={() => onChange(tab.id)}
             aria-selected={isActive}
             role="tab"
-            className={`relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition ${
-              isActive ? 'text-brand-dark' : 'text-ink-muted hover:text-ink'
+            className={`relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-150 ease-soft ${
+              isActive ? 'text-brand-dark' : 'text-ink-muted hover:bg-white/60 hover:text-ink'
             }`}
           >
             {isActive && (
               <motion.span
                 layoutId="tab-indicator"
-                className="absolute inset-0 rounded-lg bg-white shadow-sm"
-                transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                className="absolute inset-0 rounded-lg bg-white shadow-sm ring-1 ring-white/70"
+                transition={springSnap}
               />
             )}
             <span className="relative z-10">{tab.label}</span>

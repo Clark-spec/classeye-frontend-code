@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion';
+import { EASE_SOFT } from '../lib/motion';
 import type { ActivityLog } from '../types';
 
 const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
@@ -52,10 +53,14 @@ export function ActivityList({
       {logs.map((log, index) => (
         <motion.li
           key={log.id}
-          initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
-          transition={{ delay: reducedMotion ? 0 : index * 0.04, duration: 0.35, ease: 'easeOut' }}
+          transition={{
+            delay: reducedMotion ? 0 : index * 0.04,
+            duration: 0.28,
+            ease: EASE_SOFT,
+          }}
           className="flex gap-3"
         >
           <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-brand" aria-hidden="true" />

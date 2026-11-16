@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, HelpCircle, Loader2, X } from 'lucide-react';
 import { useEffect } from 'react';
+import { springPanel } from '../lib/motion';
 
 interface ConfirmModalProps {
   open: boolean;
@@ -71,7 +72,7 @@ export function ConfirmModal({
             initial={{ opacity: 0, scale: 0.95, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 4 }}
-            transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            transition={springPanel}
           >
             <div className="flex items-start justify-between gap-3">
               <div
@@ -85,7 +86,7 @@ export function ConfirmModal({
                 type="button"
                 onClick={onCancel}
                 disabled={loading}
-                className="rounded-lg p-1 text-ink-muted transition hover:bg-white/60 hover:text-ink disabled:cursor-not-allowed"
+                className="icon-btn h-8 w-8 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Close dialog"
               >
                 <X size={18} />
@@ -101,7 +102,7 @@ export function ConfirmModal({
                 onClick={onCancel}
                 disabled={loading}
                 whileTap={{ scale: 0.98 }}
-                className="rounded-xl border border-white/70 bg-white/70 px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="btn-secondary"
               >
                 {cancelLabel}
               </motion.button>
@@ -110,9 +111,7 @@ export function ConfirmModal({
                 onClick={onConfirm}
                 disabled={loading}
                 whileTap={{ scale: 0.98 }}
-                className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                  danger ? 'bg-danger hover:bg-danger/90' : 'bg-brand hover:bg-brand-dark'
-                }`}
+                className={`${danger ? 'btn-danger' : 'btn-primary'} disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 {loading && <Loader2 size={16} className="animate-spin" />}
                 {confirmLabel}

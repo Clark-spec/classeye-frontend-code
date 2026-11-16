@@ -30,16 +30,12 @@ export function PasswordInput({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className={`w-full rounded-xl border bg-white px-3 py-2.5 pr-11 text-sm text-ink transition-shadow placeholder:text-ink-muted/70 focus:outline-none focus:ring-2 ${
-          hasError
-            ? 'border-danger focus:border-danger focus:ring-danger/20 focus:shadow-[0_0_0_4px_rgba(180,35,24,0.1)]'
-            : 'border-brand-light focus:border-brand focus:ring-brand/20 focus:shadow-[0_0_0_4px_rgba(11,111,107,0.12)]'
-        }`}
+        className={`field pr-11 ${hasError ? 'field-error' : ''}`}
       />
       <button
         type="button"
         onClick={() => setVisible((current) => !current)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-ink-muted transition hover:bg-brand-surface hover:text-ink"
+        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-ink-muted transition-colors duration-150 ease-soft hover:bg-brand-light/70 hover:text-brand-dark"
         aria-label={visible ? 'Hide password' : 'Show password'}
       >
         <AnimatePresence mode="wait" initial={false}>

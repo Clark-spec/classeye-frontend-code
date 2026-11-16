@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion';
+import { EASE_SOFT } from '../lib/motion';
 import { AnimatedNumber } from './AnimatedNumber';
 
 interface CapacityBarProps {
@@ -34,7 +35,7 @@ export function CapacityBar({ people, capacity, showLabel = true }: CapacityBarP
           className={`h-full rounded-full ${over ? 'animate-pulse bg-danger' : 'bg-brand'}`}
           initial={{ width: 0 }}
           animate={{ width: `${percent}%` }}
-          transition={{ duration: reducedMotion ? 0 : 0.8, ease: 'easeOut' }}
+          transition={{ duration: reducedMotion ? 0 : 0.7, ease: EASE_SOFT }}
         />
       </div>
       {over && (

@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { Inbox, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { EASE_SOFT } from '../lib/motion';
 
 interface EmptyStateProps {
   icon?: LucideIcon;
@@ -24,7 +25,7 @@ export function EmptyState({ icon: Icon = Inbox, title, message, action }: Empty
       <motion.div
         initial={reducedMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.08, duration: 0.3 }}
+        transition={{ delay: 0.08, duration: 0.28, ease: EASE_SOFT }}
         className="w-full"
       >
         <h3 className="mt-4 text-base font-semibold text-ink">{title}</h3>

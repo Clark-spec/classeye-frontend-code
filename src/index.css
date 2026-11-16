@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-snap: cubic-bezier(0.4, 0, 0.2, 1);
+  --glass-edge: rgba(255, 255, 255, 0.72);
+  --glass-lip: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  --glass-shadow: 0 1px 2px rgba(11, 111, 107, 0.06), 0 18px 40px -22px rgba(11, 111, 107, 0.38);
+  --glass-shadow-hover: 0 1px 2px rgba(11, 111, 107, 0.08), 0 24px 52px -22px rgba(11, 111, 107, 0.48);
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
@@ -24,44 +33,295 @@
   }
 
   :where(a, button, input, select, textarea):focus-visible {
-    outline: 2px solid rgba(11, 111, 107, 0.7);
+    outline: 2px solid rgba(11, 111, 107, 0.65);
     outline-offset: 2px;
   }
 }
 
 @layer components {
+  /*
+   * Glass is built in three deliberate tiers so surfaces have depth instead of
+   * one flat white fill. Each tier keeps a near-opaque fallback for browsers
+   * without backdrop-filter, then softens into layered glass when supported.
+   */
+  .glass-subtle {
+    @apply rounded-xl border;
+    border-color: var(--glass-edge);
+    background-color: rgba(255, 255, 255, 0.9);
+    background-clip: padding-box;
+    box-shadow: var(--glass-lip), 0 1px 2px rgba(11, 111, 107, 0.05);
+  }
+
   .glass {
-    @apply rounded-2xl border border-white/60 bg-white/90 shadow-[0_8px_32px_rgba(11,111,107,0.12)];
+    @apply rounded-2xl border;
+    border-color: var(--glass-edge);
+    background-color: rgba(255, 255, 255, 0.94);
+    background-clip: padding-box;
+    box-shadow: var(--glass-lip), var(--glass-shadow);
   }
 
   .glass-strong {
-    @apply rounded-2xl border border-white/70 bg-white/90 shadow-[0_16px_48px_rgba(11,111,107,0.16)];
+    @apply rounded-2xl border;
+    border-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.96);
+    background-clip: padding-box;
+    box-shadow: var(--glass-lip), 0 1px 2px rgba(11, 111, 107, 0.07),
+      0 24px 60px -24px rgba(11, 111, 107, 0.42);
   }
 
+  /*
+   * The nav is a floating pill, so it carries the full glass treatment:
+   * rounded on every corner, border on every edge, and a shadow that lifts it
+   * off the page instead of sitting flush against the viewport.
+   */
   .glass-nav {
-    @apply rounded-none border-x-0 border-t-0 border-b border-white/60 bg-white/90 shadow-[0_4px_24px_rgba(11,111,107,0.08)];
+    @apply rounded-2xl border;
+    border-color: rgba(255, 255, 255, 0.72);
+    background-color: rgba(255, 255, 255, 0.95);
+    background-clip: padding-box;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85),
+      0 1px 2px rgba(11, 111, 107, 0.06), 0 14px 34px -20px rgba(11, 111, 107, 0.45);
+  }
+
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-subtle {
+      background-color: rgba(255, 255, 255, 0.7);
+    }
+
+    .glass {
+      background-color: transparent;
+      background-image: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.82),
+        rgba(255, 255, 255, 0.6)
+      );
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+      backdrop-filter: blur(18px) saturate(1.4);
+    }
+
+    .glass-strong {
+      background-color: transparent;
+      background-image: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.94),
+        rgba(255, 255, 255, 0.78)
+      );
+      -webkit-backdrop-filter: blur(24px) saturate(1.5);
+      backdrop-filter: blur(24px) saturate(1.5);
+    }
+
+    .glass-nav {
+      background-color: transparent;
+      background-image: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.9),
+        rgba(255, 255, 255, 0.76)
+      );
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      backdrop-filter: blur(20px) saturate(1.4);
+    }
   }
 
   .alert-card {
-    @apply relative overflow-hidden rounded-2xl border-2 border-danger bg-danger-light shadow-[0_10px_28px_rgba(180,35,24,0.24)] animate-alert-glow;
+    @apply relative overflow-hidden rounded-2xl border-2 border-danger bg-danger-light animate-alert-glow;
+    transition: transform 180ms var(--ease-soft), box-shadow 180ms var(--ease-soft);
   }
 
   .skeleton {
     @apply rounded-lg bg-[linear-gradient(90deg,rgba(217,235,232,0.5)_25%,rgba(255,255,255,0.85)_50%,rgba(217,235,232,0.5)_75%)] bg-[length:200%_100%] animate-shimmer;
   }
 
-  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .glass {
-      @apply bg-white/55 backdrop-blur-xl;
-    }
+  /* Interaction primitives: one hover contract for every control. */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white;
+    box-shadow: 0 10px 22px -14px rgba(11, 111, 107, 0.7);
+    transition: transform 180ms var(--ease-soft), background-color 180ms var(--ease-soft),
+      box-shadow 180ms var(--ease-soft);
+  }
 
-    .glass-strong {
-      @apply bg-white/80 backdrop-blur-2xl;
-    }
+  .btn-primary:hover {
+    @apply bg-brand-dark;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px -14px rgba(11, 111, 107, 0.75);
+  }
 
-    .glass-nav {
-      @apply bg-white/55 backdrop-blur-xl;
-    }
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 18px -14px rgba(11, 111, 107, 0.7);
+  }
+
+  .btn-primary:disabled {
+    @apply cursor-not-allowed opacity-60;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-primary:disabled:hover {
+    @apply bg-brand;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-brand-light bg-white/70 px-4 py-2.5 text-sm font-semibold text-ink;
+    transition: transform 180ms var(--ease-soft), background-color 180ms var(--ease-soft),
+      border-color 180ms var(--ease-soft), color 180ms var(--ease-soft),
+      box-shadow 180ms var(--ease-soft);
+  }
+
+  .btn-secondary:hover {
+    @apply border-brand/30 bg-white text-brand-dark;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px -18px rgba(11, 111, 107, 0.6);
+  }
+
+  .btn-secondary:active {
+    transform: translateY(0);
+  }
+
+  .btn-secondary:disabled {
+    @apply cursor-not-allowed opacity-60;
+    transform: none;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-danger px-4 py-2.5 text-sm font-semibold text-white;
+    box-shadow: 0 10px 22px -14px rgba(180, 35, 24, 0.7);
+    transition: transform 180ms var(--ease-soft), background-color 180ms var(--ease-soft),
+      box-shadow 180ms var(--ease-soft);
+  }
+
+  .btn-danger:hover {
+    background-color: #9f1f15;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px -14px rgba(180, 35, 24, 0.75);
+  }
+
+  .btn-danger:active {
+    transform: translateY(0);
+  }
+
+  .btn-danger:disabled {
+    @apply cursor-not-allowed opacity-60;
+    transform: none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-ink-muted;
+    transition: background-color 160ms var(--ease-soft), color 160ms var(--ease-soft);
+  }
+
+  .btn-ghost:hover {
+    @apply bg-brand-light/70 text-brand-dark;
+  }
+
+  .icon-btn {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink-muted;
+    transition: transform 160ms var(--ease-soft), background-color 160ms var(--ease-soft),
+      color 160ms var(--ease-soft);
+  }
+
+  .icon-btn:hover {
+    @apply bg-brand-light/70 text-brand-dark;
+    transform: scale(1.06);
+  }
+
+  .icon-btn:active {
+    transform: scale(0.96);
+  }
+
+  .card-interactive {
+    will-change: transform;
+    transition: transform 180ms var(--ease-soft), box-shadow 180ms var(--ease-soft),
+      border-color 180ms var(--ease-soft), background-color 180ms var(--ease-soft);
+  }
+
+  .card-interactive:hover {
+    transform: translateY(-3px);
+    border-color: rgba(11, 111, 107, 0.3);
+    box-shadow: var(--glass-shadow-hover);
+  }
+
+  .card-interactive:active {
+    transform: translateY(-1px);
+  }
+
+  .row-interactive {
+    --row-accent-start: #0b6f6b;
+    --row-accent-end: #36a79f;
+    --row-hover-bg: rgba(255, 255, 255, 0.9);
+    --row-hover-border: rgba(11, 111, 107, 0.35);
+    --row-hover-shadow: 0 12px 26px -20px rgba(11, 111, 107, 0.55);
+
+    position: relative;
+    overflow: hidden;
+    transition: transform 180ms var(--ease-soft), box-shadow 180ms var(--ease-soft),
+      border-color 180ms var(--ease-soft), background-color 180ms var(--ease-soft);
+  }
+
+  .row-interactive::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    border-radius: 0 999px 999px 0;
+    background-image: linear-gradient(180deg, var(--row-accent-start), var(--row-accent-end));
+    opacity: 0;
+    transform: scaleY(0.35);
+    transition: opacity 180ms var(--ease-soft), transform 180ms var(--ease-soft);
+  }
+
+  .row-interactive:hover::before,
+  .row-interactive:focus-visible::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .row-interactive:hover {
+    background-color: var(--row-hover-bg);
+    border-color: var(--row-hover-border);
+    box-shadow: var(--row-hover-shadow);
+    transform: translateY(-2px);
+  }
+
+  .row-interactive:active {
+    transform: translateY(0);
+  }
+
+  .row-interactive-danger {
+    --row-accent-start: #b42318;
+    --row-accent-end: #e05b4f;
+    --row-hover-bg: #fbdbd8;
+    --row-hover-border: rgba(180, 35, 24, 0.42);
+    --row-hover-shadow: 0 12px 26px -20px rgba(180, 35, 24, 0.5);
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-brand-light bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-muted/70;
+    transition: border-color 180ms var(--ease-soft), box-shadow 180ms var(--ease-soft),
+      background-color 180ms var(--ease-soft);
+  }
+
+  .field:hover {
+    border-color: rgba(11, 111, 107, 0.3);
+  }
+
+  .field:focus {
+    outline: none;
+    border-color: #0b6f6b;
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(11, 111, 107, 0.12);
+  }
+
+  .field-error {
+    border-color: #b42318;
+  }
+
+  .field-error:hover {
+    border-color: #b42318;
+  }
+
+  .field-error:focus {
+    border-color: #b42318;
+    box-shadow: 0 0 0 4px rgba(180, 35, 24, 0.12);
   }
 }
 
@@ -81,5 +341,14 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .btn-danger:hover,
+  .icon-btn:hover,
+  .card-interactive:hover,
+  .row-interactive:hover {
+    transform: none;
   }
 }

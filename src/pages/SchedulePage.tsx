@@ -31,8 +31,7 @@ const dayOptions: FilterOption[] = [
   ...SCHEDULE_DAYS.map((day) => ({ value: day, label: DAY_LABELS[day] })),
 ];
 
-const selectClass =
-  'rounded-xl border border-brand-light bg-white px-3 py-2.5 text-sm text-ink transition-shadow focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 focus:shadow-[0_0_0_4px_rgba(11,111,107,0.12)] lg:w-52';
+const selectClass = 'field lg:w-52';
 
 export function SchedulePage() {
   const { user } = useAuth();
@@ -283,7 +282,7 @@ export function SchedulePage() {
           <button
             type="button"
             onClick={openCreate}
-            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-brand-dark"
+            className="btn-primary group relative overflow-hidden"
           >
             <span
               className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"
@@ -325,7 +324,7 @@ export function SchedulePage() {
             <button
               type="button"
               onClick={clearFilters}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-brand-light bg-white px-3 py-2.5 text-sm font-semibold text-ink-muted transition hover:text-ink"
+              className="btn-secondary px-3"
             >
               <X size={16} />
               Clear
@@ -357,7 +356,7 @@ export function SchedulePage() {
           <button
             type="button"
             onClick={() => setReloadKey((current) => current + 1)}
-            className="mt-4 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            className="btn-primary mt-4"
           >
             Retry
           </button>
@@ -380,7 +379,7 @@ export function SchedulePage() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+                className="btn-primary"
               >
                 Clear filters
               </button>
@@ -388,7 +387,7 @@ export function SchedulePage() {
               <button
                 type="button"
                 onClick={openCreate}
-                className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+                className="btn-primary"
               >
                 <CalendarPlus size={18} />
                 Add Schedule
