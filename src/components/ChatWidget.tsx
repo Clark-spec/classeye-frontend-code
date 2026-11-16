@@ -1,11 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
+  Bot,
   ChevronLeft,
   Clock,
   History,
-  Loader2,
-  MessageCircle,
   MessageSquare,
   Plus,
   Send,
@@ -59,6 +58,52 @@ function formatSessionTime(timestamp: number): string {
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays}d ago`;
   return new Date(timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+/** Animated 3-dot typing indicator */
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-1.5 px-1 py-0.5">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="h-2 w-2 rounded-full bg-brand/60"
+          style={{
+            animation: 'typingBounce 1.2s ease-in-out infinite',
+            animationDelay: `${i * 0.2}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Provider badge chip shown below AI message */
+function ProviderBadge({
+  provider,
+  degraded,
+}: {
+  provider?: string;
+  degraded?: boolean;
+}) {
+  if (!provider && !degraded) return null;
+
+  const isLocal = provider === 'heuristic';
+  const label = isLocal ? 'Local analysis' : `AI · ${provider ?? 'unknown'}`;
+
+  return (
+    <span
+      className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+        isLocal
+          ? 'bg-ink/8 text-ink-muted'
+          : 'bg-brand/10 text-brand-dark'
+      }`}
+    >
+      <Sparkles size={9} aria-hidden="true" />
+      {label}
+      {degraded && ' · fallback'}
+    </span>
+  );
 }
 
 export function ChatWidget() {
@@ -297,19 +342,31 @@ export function ChatWidget() {
 
   return (
     <>
+      {/* Keyframe for typing dots — injected once */}
+      <style>{`
+        @keyframes typingBounce {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+          30% { transform: translateY(-5px); opacity: 1; }
+        }
+        @keyframes fabPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(11,111,107,0.35); }
+          50% { box-shadow: 0 0 0 10px rgba(11,111,107,0); }
+        }
+      `}</style>
+
       <AnimatePresence>
         {open && (
           <motion.section
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            initial={{ opacity: 0, y: 12, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            exit={{ opacity: 0, y: 12, scale: 0.97 }}
             transition={{ duration: 0.22, ease: EASE_SOFT }}
             role="dialog"
             aria-label="Class Eye assistant"
             id="class-eye-chat"
-            className="glass-strong fixed bottom-24 right-4 z-50 flex h-[min(34rem,calc(100vh-8rem))] w-[min(25rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl shadow-[0_24px_70px_-24px_rgba(11,111,107,0.55)] sm:right-6"
+            className="glass-strong fixed bottom-24 right-4 z-50 flex h-[min(36rem,calc(100vh-8rem))] w-[min(28rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl shadow-[0_24px_70px_-24px_rgba(11,111,107,0.55)] sm:right-6"
           >
-            {/* Header */}
+            {/* ── Header ── */}
             <header className="flex items-center justify-between border-b border-white/60 bg-brand-light/60 px-4 py-3">
               {showHistory ? (
                 <div className="flex items-center gap-2">
@@ -323,17 +380,18 @@ export function ChatWidget() {
                   </button>
                   <div>
                     <h2 className="text-sm font-bold text-ink">Chat History</h2>
-                    <p className="text-[11px] text-ink-muted">Claude-style saved conversations</p>
+                    <p className="text-[11px] text-ink-muted">Your saved conversations</p>
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/80 text-brand-dark shadow-xs">
-                    <Sparkles size={18} aria-hidden="true" />
+                  {/* AI avatar in header */}
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-xs">
+                    <Bot size={18} aria-hidden="true" />
                   </span>
                   <div>
                     <h2 className="text-sm font-bold text-ink">Ask Class Eye</h2>
-                    <p className="text-xs text-ink-muted">AI advisory · role-aware</p>
+                    <p className="text-xs text-ink-muted">AI assistant · role-aware</p>
                   </div>
                 </div>
               )}
@@ -382,7 +440,7 @@ export function ChatWidget() {
               </div>
             </header>
 
-            {/* Main content: Either Chat History list OR Conversation */}
+            {/* ── History Panel OR Chat ── */}
             {showHistory ? (
               <div className="flex flex-1 flex-col overflow-hidden bg-brand-surface/40">
                 <div className="flex items-center justify-between border-b border-brand-light/60 px-4 py-2.5 text-xs text-ink-muted">
@@ -481,6 +539,7 @@ export function ChatWidget() {
               </div>
             ) : (
               <>
+                {/* ── Message List ── */}
                 <div
                   ref={listRef}
                   className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
@@ -489,28 +548,36 @@ export function ChatWidget() {
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={message.role === 'user' ? 'flex justify-end' : 'flex justify-start'}
+                      className={message.role === 'user' ? 'flex justify-end' : 'flex items-end gap-2 justify-start'}
                     >
+                      {/* Bot avatar on AI messages */}
+                      {message.role === 'assistant' && (
+                        <span className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-xs">
+                          <Bot size={14} aria-hidden="true" />
+                        </span>
+                      )}
+
                       <div
-                        className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
+                        className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm ${
                           message.role === 'user'
                             ? 'rounded-br-md bg-brand text-white shadow-xs'
-                            : 'rounded-bl-md bg-brand-surface text-ink'
+                            : 'rounded-bl-md bg-brand-surface text-ink shadow-xs'
                         }`}
                       >
-                        <p className="whitespace-pre-line">{message.content}</p>
-                        {message.role === 'assistant' && (message.provider || message.degraded) && (
-                          <p className="mt-1.5 text-[11px] text-ink-muted">
-                            {message.provider === 'heuristic'
-                              ? 'Local analysis'
-                              : `${message.provider}${message.model ? ` (${message.model})` : ''}`}
-                            {message.degraded ? ' · fallback used' : ''}
-                          </p>
+                        <p className="whitespace-pre-line leading-relaxed">{message.content}</p>
+
+                        {/* Provider badge chip — only on AI messages */}
+                        {message.role === 'assistant' && (
+                          <ProviderBadge
+                            provider={message.provider}
+                            degraded={message.degraded}
+                          />
                         )}
                       </div>
                     </div>
                   ))}
 
+                  {/* Suggestion chips — shown on fresh chat */}
                   {messages.length === 1 && (
                     <div className="flex flex-wrap gap-2 pt-1">
                       {suggestions.map((suggestion) => (
@@ -527,16 +594,20 @@ export function ChatWidget() {
                     </div>
                   )}
 
+                  {/* 3-dot typing indicator */}
                   {loading && (
-                    <div className="flex justify-start">
-                      <div className="inline-flex items-center gap-2 rounded-2xl rounded-bl-md bg-brand-surface px-3.5 py-2.5 text-sm text-ink-muted">
-                        <Loader2 size={15} className="animate-spin" aria-hidden="true" />
-                        Checking data…
+                    <div className="flex items-end gap-2 justify-start">
+                      <span className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-xs">
+                        <Bot size={14} aria-hidden="true" />
+                      </span>
+                      <div className="rounded-2xl rounded-bl-md bg-brand-surface px-3.5 py-3 shadow-xs">
+                        <TypingDots />
                       </div>
                     </div>
                   )}
                 </div>
 
+                {/* Error banner */}
                 {error && (
                   <p
                     role="alert"
@@ -547,9 +618,10 @@ export function ChatWidget() {
                   </p>
                 )}
 
+                {/* ── Input bar ── */}
                 <form
                   onSubmit={handleSubmit}
-                  className="flex items-center gap-2 border-t border-brand-light px-3 py-3"
+                  className="flex items-center gap-2 border-t border-brand-light bg-white/40 px-3 py-3"
                 >
                   <label htmlFor="assistant-chat-input" className="sr-only">
                     Question
@@ -579,6 +651,7 @@ export function ChatWidget() {
         )}
       </AnimatePresence>
 
+      {/* ── FAB Button with pulse ring ── */}
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
@@ -586,12 +659,31 @@ export function ChatWidget() {
         aria-expanded={open}
         aria-controls="class-eye-chat"
         className="fixed bottom-5 right-4 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-[0_12px_32px_rgba(11,111,107,0.35)] transition-[transform,background-color,box-shadow] duration-200 ease-soft hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-[0_18px_44px_-12px_rgba(11,111,107,0.65)] hover:ring-4 hover:ring-brand/15 active:translate-y-0 active:scale-95 sm:right-6"
+        style={!open ? { animation: 'fabPulse 2.5s ease-in-out infinite' } : undefined}
       >
-        {open ? (
-          <X size={22} aria-hidden="true" />
-        ) : (
-          <MessageCircle size={24} aria-hidden="true" />
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          {open ? (
+            <motion.span
+              key="close"
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <X size={22} aria-hidden="true" />
+            </motion.span>
+          ) : (
+            <motion.span
+              key="bot"
+              initial={{ rotate: 90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: -90, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Bot size={24} aria-hidden="true" />
+            </motion.span>
+          )}
+        </AnimatePresence>
       </button>
     </>
   );
