@@ -12,6 +12,7 @@ import { RoomListItem } from '../components/RoomListItem';
 import { SearchInput } from '../components/SearchInput';
 import { Skeleton } from '../components/Skeleton';
 import { staggerItem } from '../components/Stagger';
+import { useAuth } from '../context/AuthContext';
 import type { Room, RoomStatus } from '../types';
 
 const statusOptions: FilterOption[] = [
@@ -24,6 +25,8 @@ const statusOptions: FilterOption[] = [
 const floorOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 export function RoomsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [searchParams, setSearchParams] = useSearchParams();
   const searchParam = searchParams.get('search') ?? '';
 
@@ -129,17 +132,19 @@ export function RoomsPage() {
             )}
           </p>
         </div>
-        <Link
-          to="/rooms/new"
-          className="btn-primary group relative overflow-hidden"
-        >
-          <span
-            className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"
-            aria-hidden="true"
-          />
-          <Plus size={18} className="relative" />
-          <span className="relative">Add Room</span>
-        </Link>
+        {isAdmin && (
+          <Link
+            to="/rooms/new"
+            className="btn-primary group relative overflow-hidden"
+          >
+            <span
+              className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+              aria-hidden="true"
+            />
+            <Plus size={18} className="relative" />
+            <span className="relative">Add Room</span>
+          </Link>
+        )}
       </Reveal>
 
       <Reveal>
@@ -201,15 +206,21 @@ export function RoomsPage() {
         <EmptyState
           icon={Building2}
           title="No rooms found"
-          message="Try a different search or filter, or add a new room to get started."
+          message={
+            isAdmin
+              ? 'Try a different search or filter, or add a new room to get started.'
+              : 'Try a different search or filter.'
+          }
           action={
-            <Link
-              to="/rooms/new"
-              className="btn-primary"
-            >
-              <Plus size={18} />
-              Add Room
-            </Link>
+            isAdmin ? (
+              <Link
+                to="/rooms/new"
+                className="btn-primary"
+              >
+                <Plus size={18} />
+                Add Room
+              </Link>
+            ) : undefined
           }
         />
       )}

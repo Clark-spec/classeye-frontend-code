@@ -1,20 +1,29 @@
 import { ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getApiErrorMessage, getApiFieldErrors } from '../api/client';
 import { createRoom } from '../api/rooms';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { Reveal } from '../components/Reveal';
 import { RoomForm } from '../components/RoomForm';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import type { RoomPayload } from '../types';
 
 export function RoomCreatePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { showToast } = useToast();
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [submitting, setSubmitting] = useState(false);
   const [pendingValues, setPendingValues] = useState<RoomPayload | null>(null);
+
+  useEffect(() => {
+    if (user && user.role !== 'admin') {
+      showToast('Only administrators can add new rooms.', 'error');
+      navigate('/rooms', { replace: true });
+    }
+  }, [user, navigate, showToast]);
 
   function handleSubmit(values: RoomPayload) {
     setPendingValues(values);
