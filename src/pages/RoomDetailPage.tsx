@@ -1,16 +1,14 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, ArrowLeft, BrainCircuit, CheckCircle2, Wrench } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, CheckCircle2, Wrench } from 'lucide-react';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getApiErrorMessage, getApiFieldErrors } from '../api/client';
-import { fetchRoomInsight } from '../api/insights';
 import { deleteRoom, fetchRoom, fetchRoomLogs, updateRoom } from '../api/rooms';
 import { ActivityList } from '../components/ActivityList';
 import { AnimatedNumber } from '../components/AnimatedNumber';
 import { CapacityBar } from '../components/CapacityBar';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { Reveal } from '../components/Reveal';
-import { RiskBadge } from '../components/RiskBadge';
 import { RoomForm } from '../components/RoomForm';
 import { Skeleton } from '../components/Skeleton';
 import { StatusBadge } from '../components/StatusBadge';
@@ -18,7 +16,7 @@ import { Tabs, type TabItem } from '../components/Tabs';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { EASE_SOFT } from '../lib/motion';
-import type { ActivityLog, Room, RoomInsight, RoomPayload } from '../types';
+import type { ActivityLog, Room, RoomPayload } from '../types';
 
 const tabs: TabItem[] = [
   { id: 'overview', label: 'Overview' },
@@ -62,7 +60,6 @@ export function RoomDetailPage() {
   const { showToast } = useToast();
 
   const [room, setRoom] = useState<Room | null>(null);
-  const [insight, setInsight] = useState<RoomInsight | null>(null);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
@@ -88,13 +85,6 @@ export function RoomDetailPage() {
       const [roomData, logData] = await Promise.all([fetchRoom(roomId), fetchRoomLogs(roomId)]);
       setRoom(roomData);
       setLogs(logData);
-
-      try {
-        setInsight(await fetchRoomInsight(roomId));
-      } catch {
-        // Insights are advisory; the room remains usable without them.
-        setInsight(null);
-      }
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, 'Unable to load this room.'));
     } finally {
@@ -125,10 +115,6 @@ export function RoomDetailPage() {
       setSaved(true);
       showToast('Room updated', 'success');
       window.setTimeout(() => setSaved(false), 1800);
-
-      fetchRoomInsight(room.id)
-        .then(setInsight)
-        .catch(() => setInsight(null));
 
       try {
         setLogs(await fetchRoomLogs(room.id));
@@ -305,42 +291,6 @@ export function RoomDetailPage() {
                 <InfoItem label="Building">{room.building}</InfoItem>
                 <InfoItem label="Last updated">{formatDateTime(room.updated_at)}</InfoItem>
               </div>
-
-              {insight && (
-                <div className="mt-4 rounded-xl border border-brand-light bg-brand-surface/70 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink">
-                      <BrainCircuit size={16} className="text-brand" aria-hidden="true" />
-                      Occupancy insight
-                    </p>
-                    <RiskBadge risk={insight.risk_level} />
-                  </div>
-
-                  <p className="mt-2 text-sm text-ink-muted">{insight.reason}</p>
-
-                  <dl className="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
-                    <div>
-                      <dt className="text-xs text-ink-muted">
-                        Forecast ({insight.forecast_minutes} min)
-                      </dt>
-                      <dd className="font-semibold text-ink">
-                        {insight.forecast_people_count} people
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-ink-muted">Trend</dt>
-                      <dd className="font-semibold text-ink">
-                        {insight.growth_per_hour > 0 ? '+' : ''}
-                        {insight.growth_per_hour} / hr
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-ink-muted">Confidence</dt>
-                      <dd className="font-semibold capitalize text-ink">{insight.confidence}</dd>
-                    </div>
-                  </dl>
-                </div>
-              )}
             </section>
 
             <section className={`p-5 ${room.is_over_capacity ? 'alert-card' : 'glass'}`}>
