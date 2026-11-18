@@ -4,6 +4,7 @@ import {
   Bot,
   ChevronLeft,
   Clock,
+  HelpCircle,
   History,
   MessageSquare,
   Plus,
@@ -12,7 +13,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import React, { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { askAssistant } from '../api/assistant';
 import { getApiErrorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -20,13 +21,13 @@ import { EASE_SOFT } from '../lib/motion';
 import type { AssistantTurn } from '../types';
 
 const welcomeMessage =
-  "Hi! I'm the Class Eye assistant. I can help with room occupancy, capacity alerts, schedules, and explain system features.";
+  "Hi! I'm the Class Eye Assistant. I can assist with room occupancy, capacity alerts, schedules, and system navigation.";
 
 const suggestions = [
   'Which rooms need attention?',
   'Which rooms are empty?',
+  'What classes are today?',
   'What time is OOP-JAVA?',
-  'What day is DATASTRUCT?',
   'Show occupancy by floor',
 ];
 
@@ -37,6 +38,7 @@ interface ChatMessage {
   provider?: string;
   model?: string | null;
   degraded?: boolean;
+  createdAt?: number;
 }
 
 interface ChatSession {
@@ -60,6 +62,92 @@ function formatSessionTime(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
+function formatMessageClock(timestamp?: number): string {
+  if (!timestamp) return '';
+  return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+/**
+ * Lightweight safe markdown renderer for bold, italic, inline code,
+ * bullet lists, and numbered lists.
+ */
+function FormattedContent({ text }: { text: string }) {
+  const lines = text.split('\n');
+
+  return (
+    <div className="space-y-1.5 leading-relaxed">
+      {lines.map((line, lineIdx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={lineIdx} className="h-1" />;
+        }
+
+        // Bullet point detection: -, *, •, or ▸
+        const bulletMatch = /^[•*▸\-]\s+(.*)$/.exec(trimmed);
+        if (bulletMatch) {
+          return (
+            <div key={lineIdx} className="flex items-start gap-2 pl-1 text-[13px]">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+              <span>{renderInline(bulletMatch[1])}</span>
+            </div>
+          );
+        }
+
+        // Numbered list detection: 1. , 2. , etc.
+        const numberMatch = /^(\d+)\.\s+(.*)$/.exec(trimmed);
+        if (numberMatch) {
+          return (
+            <div key={lineIdx} className="flex items-start gap-2 pl-1 text-[13px]">
+              <span className="shrink-0 font-semibold text-brand text-[12px]">{numberMatch[1]}.</span>
+              <span>{renderInline(numberMatch[2])}</span>
+            </div>
+          );
+        }
+
+        return (
+          <p key={lineIdx} className="text-[13.5px]">
+            {renderInline(line)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Parses bold (**...**), italic (*...*), and code (`...`) */
+function renderInline(text: string): React.ReactNode {
+  // Regex to tokenise bold, code, and italic
+  const parts = text.split(/(\*\*.*?\*\*|`.*?`|\*.*?\*)/g);
+
+  return parts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+      return (
+        <strong key={idx} className="font-semibold text-ink">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+      return (
+        <code
+          key={idx}
+          className="rounded bg-brand/10 px-1 py-0.5 font-mono text-[11.5px] font-medium text-brand-dark"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    if (part.startsWith('*') && part.endsWith('*') && part.length >= 2) {
+      return (
+        <em key={idx} className="italic">
+          {part.slice(1, -1)}
+        </em>
+      );
+    }
+    return part;
+  });
+}
+
 /** Animated 3-dot typing indicator */
 function TypingDots() {
   return (
@@ -78,30 +166,19 @@ function TypingDots() {
   );
 }
 
-/** Provider badge chip shown below AI message */
-function ProviderBadge({
-  provider,
-  degraded,
-}: {
-  provider?: string;
-  degraded?: boolean;
-}) {
-  if (!provider && !degraded) return null;
-
-  const isLocal = provider === 'heuristic';
-  const label = isLocal ? 'Local analysis' : `AI · ${provider ?? 'unknown'}`;
+/**
+ * Provider badge chip shown below AI messages.
+ * Omits degraded/fallback/heuristic labels entirely for a clean, professional look.
+ */
+function ProviderBadge({ provider }: { provider?: string }) {
+  if (!provider || provider === 'heuristic') {
+    return null;
+  }
 
   return (
-    <span
-      className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${
-        isLocal
-          ? 'bg-ink/8 text-ink-muted'
-          : 'bg-brand/10 text-brand-dark'
-      }`}
-    >
+    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-brand-dark">
       <Sparkles size={9} aria-hidden="true" />
-      {label}
-      {degraded && ' · fallback'}
+      Class Eye AI
     </span>
   );
 }
@@ -110,8 +187,18 @@ export function ChatWidget() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showSuggestionsMenu, setShowSuggestionsMenu] = useState(false);
 
-  // Storage key is scoped to the logged-in user for confidentiality
+  // Stop FAB pulse animation once user has opened the widget at least once
+  const [hasOpenedEver, setHasOpenedEver] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('class_eye_chat_has_opened') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  // Storage key is scoped to the logged-in user for CIA confidentiality
   const storageKey = `class_eye_chat_sessions_${user?.staff_id ?? user?.id ?? 'default'}`;
 
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
@@ -128,7 +215,7 @@ export function ChatWidget() {
   );
 
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: 0, role: 'assistant', content: welcomeMessage },
+    { id: 0, role: 'assistant', content: welcomeMessage, createdAt: Date.now() },
   ]);
 
   const [question, setQuestion] = useState('');
@@ -141,6 +228,21 @@ export function ChatWidget() {
   const listRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const handleOpenToggle = () => {
+    setOpen((prev) => {
+      const next = !prev;
+      if (next && !hasOpenedEver) {
+        setHasOpenedEver(true);
+        try {
+          localStorage.setItem('class_eye_chat_has_opened', 'true');
+        } catch {
+          // ignore
+        }
+      }
+      return next;
+    });
+  };
+
   // Reload sessions if user switches
   useEffect(() => {
     try {
@@ -148,7 +250,7 @@ export function ChatWidget() {
       const parsed = stored ? (JSON.parse(stored) as ChatSession[]) : [];
       setSessions(parsed);
       setCurrentSessionId(`session_${Date.now()}`);
-      setMessages([{ id: 0, role: 'assistant', content: welcomeMessage }]);
+      setMessages([{ id: 0, role: 'assistant', content: welcomeMessage, createdAt: Date.now() }]);
     } catch {
       setSessions([]);
     }
@@ -237,11 +339,12 @@ export function ChatWidget() {
     conversationRef.current += 1;
     sendingRef.current = false;
     setCurrentSessionId(`session_${Date.now()}`);
-    setMessages([{ id: 0, role: 'assistant', content: welcomeMessage }]);
+    setMessages([{ id: 0, role: 'assistant', content: welcomeMessage, createdAt: Date.now() }]);
     setQuestion('');
     setError(null);
     setLoading(false);
     setShowHistory(false);
+    setShowSuggestionsMenu(false);
     nextId.current = 1;
   }
 
@@ -254,6 +357,7 @@ export function ChatWidget() {
     setError(null);
     setLoading(false);
     setShowHistory(false);
+    setShowSuggestionsMenu(false);
     nextId.current = session.messages.length + 1;
   }
 
@@ -289,7 +393,12 @@ export function ChatWidget() {
       .map(({ role, content }) => ({ role, content }));
 
     const userId = nextId.current++;
-    const userMessage: ChatMessage = { id: userId, role: 'user', content: trimmed };
+    const userMessage: ChatMessage = {
+      id: userId,
+      role: 'user',
+      content: trimmed,
+      createdAt: Date.now(),
+    };
     const conversation = conversationRef.current;
 
     sendingRef.current = true;
@@ -300,6 +409,7 @@ export function ChatWidget() {
     setQuestion('');
     setError(null);
     setLoading(true);
+    setShowSuggestionsMenu(false);
 
     try {
       const response = await askAssistant(trimmed, history);
@@ -318,6 +428,7 @@ export function ChatWidget() {
           provider: response.provider,
           model: response.model,
           degraded: response.degraded,
+          createdAt: Date.now(),
         },
       ];
 
@@ -342,15 +453,15 @@ export function ChatWidget() {
 
   return (
     <>
-      {/* Keyframe for typing dots — injected once */}
+      {/* Keyframes */}
       <style>{`
         @keyframes typingBounce {
           0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
           30% { transform: translateY(-5px); opacity: 1; }
         }
         @keyframes fabPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(11,111,107,0.35); }
-          50% { box-shadow: 0 0 0 10px rgba(11,111,107,0); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(11,111,107,0.4); }
+          50% { box-shadow: 0 0 0 12px rgba(11,111,107,0); }
         }
       `}</style>
 
@@ -385,22 +496,48 @@ export function ChatWidget() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2.5">
-                  {/* AI avatar in header */}
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-xs">
                     <Bot size={18} aria-hidden="true" />
                   </span>
                   <div>
-                    <h2 className="text-sm font-bold text-ink">Ask Class Eye</h2>
-                    <p className="text-xs text-ink-muted">AI assistant · role-aware</p>
+                    <div className="flex items-center gap-1.5">
+                      <h2 className="text-sm font-bold text-ink">Ask Class Eye</h2>
+                      <span className="rounded-full bg-brand/10 px-1.5 py-0.2 text-[10px] font-semibold text-brand-dark">
+                        {user?.role === 'admin' ? 'Admin' : 'Teacher'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-ink-muted">
+                      {user?.role === 'admin' ? 'School-wide access' : 'Classroom & schedule load'}
+                    </p>
                   </div>
                 </div>
               )}
 
               <div className="flex items-center gap-1">
+                {/* Suggestions quick-menu toggle */}
+                {!showHistory && (
+                  <button
+                    type="button"
+                    onClick={() => setShowSuggestionsMenu((curr) => !curr)}
+                    aria-label="Common questions"
+                    title="Suggested prompts"
+                    className={`icon-btn h-8 w-8 transition-colors ${
+                      showSuggestionsMenu
+                        ? 'bg-brand/15 text-brand-dark'
+                        : 'text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    <HelpCircle size={16} aria-hidden="true" />
+                  </button>
+                )}
+
                 {/* History button */}
                 <button
                   type="button"
-                  onClick={() => setShowHistory((curr) => !curr)}
+                  onClick={() => {
+                    setShowHistory((curr) => !curr);
+                    setShowSuggestionsMenu(false);
+                  }}
                   aria-label={showHistory ? 'Return to conversation' : 'View chat history'}
                   title="Chat history"
                   className={`icon-btn relative h-8 w-8 transition-colors ${
@@ -465,7 +602,7 @@ export function ChatWidget() {
                       </div>
                       <p className="mt-3 text-xs font-semibold text-ink">No conversations yet</p>
                       <p className="mt-1 text-[11px] text-ink-muted">
-                        Ask any question about rooms, capacity, or schedules to build your history.
+                        Ask about rooms, occupancy, or schedules to build your history.
                       </p>
                     </div>
                   ) : (
@@ -548,7 +685,9 @@ export function ChatWidget() {
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={message.role === 'user' ? 'flex justify-end' : 'flex items-end gap-2 justify-start'}
+                      className={`group flex ${
+                        message.role === 'user' ? 'justify-end' : 'items-end gap-2 justify-start'
+                      }`}
                     >
                       {/* Bot avatar on AI messages */}
                       {message.role === 'assistant' && (
@@ -558,39 +697,61 @@ export function ChatWidget() {
                       )}
 
                       <div
-                        className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm ${
+                        className={`relative max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm ${
                           message.role === 'user'
                             ? 'rounded-br-md bg-brand text-white shadow-xs'
                             : 'rounded-bl-md bg-brand-surface text-ink shadow-xs'
                         }`}
                       >
-                        <p className="whitespace-pre-line leading-relaxed">{message.content}</p>
+                        <FormattedContent text={message.content} />
 
-                        {/* Provider badge chip — only on AI messages */}
-                        {message.role === 'assistant' && (
-                          <ProviderBadge
-                            provider={message.provider}
-                            degraded={message.degraded}
-                          />
-                        )}
+                        <div className="mt-1 flex items-center justify-between gap-2">
+                          {message.role === 'assistant' && (
+                            <ProviderBadge provider={message.provider} />
+                          )}
+
+                          {message.createdAt && (
+                            <span
+                              className={`text-[10px] opacity-70 ${
+                                message.role === 'user' ? 'text-white/80 ml-auto' : 'text-ink-muted'
+                              }`}
+                            >
+                              {formatMessageClock(message.createdAt)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
 
-                  {/* Suggestion chips — shown on fresh chat */}
-                  {messages.length === 1 && (
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {suggestions.map((suggestion) => (
-                        <button
-                          key={suggestion}
-                          type="button"
-                          onClick={() => void send(suggestion)}
-                          disabled={loading}
-                          className="rounded-full bg-brand-surface px-3 py-1.5 text-left text-xs font-medium text-ink-muted transition-[background-color,color,transform,box-shadow] duration-200 ease-soft hover:-translate-y-0.5 hover:bg-brand-light hover:text-brand-dark hover:shadow-xs active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
+                  {/* Suggestion chips menu or initial chips */}
+                  {(messages.length === 1 || showSuggestionsMenu) && (
+                    <div className="rounded-xl border border-brand/20 bg-brand-light/40 p-2.5">
+                      <div className="mb-2 flex items-center justify-between text-[11px] font-semibold text-brand-dark">
+                        <span>Suggested questions:</span>
+                        {showSuggestionsMenu && (
+                          <button
+                            type="button"
+                            onClick={() => setShowSuggestionsMenu(false)}
+                            className="text-ink-muted hover:text-ink"
+                          >
+                            Close
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {suggestions.map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            onClick={() => void send(suggestion)}
+                            disabled={loading}
+                            className="rounded-full bg-white/90 px-3 py-1.5 text-left text-xs font-medium text-ink transition-[background-color,color,transform,box-shadow] duration-200 ease-soft hover:-translate-y-0.5 hover:bg-brand hover:text-white hover:shadow-xs active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -621,21 +782,34 @@ export function ChatWidget() {
                 {/* ── Input bar ── */}
                 <form
                   onSubmit={handleSubmit}
-                  className="flex items-center gap-2 border-t border-brand-light bg-white/40 px-3 py-3"
+                  className="relative flex items-center gap-2 border-t border-brand-light bg-white/50 px-3 py-2.5"
                 >
                   <label htmlFor="assistant-chat-input" className="sr-only">
                     Question
                   </label>
-                  <input
-                    id="assistant-chat-input"
-                    ref={inputRef}
-                    type="text"
-                    value={question}
-                    onChange={(event) => setQuestion(event.target.value)}
-                    maxLength={500}
-                    placeholder="Ask about rooms, alerts, or schedules…"
-                    className="field min-w-0 flex-1 py-2 text-sm"
-                  />
+                  <div className="relative min-w-0 flex-1">
+                    <input
+                      id="assistant-chat-input"
+                      ref={inputRef}
+                      type="text"
+                      value={question}
+                      onChange={(event) => setQuestion(event.target.value)}
+                      maxLength={500}
+                      placeholder="Ask about rooms, alerts, or schedules…"
+                      className="field w-full py-2 text-sm pr-14"
+                    />
+                    {/* Character limit indicator (shown when > 350 chars) */}
+                    {question.length > 350 && (
+                      <span
+                        className={`absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono ${
+                          question.length >= 480 ? 'text-danger font-bold' : 'text-ink-muted'
+                        }`}
+                      >
+                        {question.length}/500
+                      </span>
+                    )}
+                  </div>
+
                   <button
                     type="submit"
                     disabled={loading || question.trim().length < 3}
@@ -654,12 +828,12 @@ export function ChatWidget() {
       {/* ── FAB Button with pulse ring ── */}
       <button
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={handleOpenToggle}
         aria-label={open ? 'Close Class Eye assistant' : 'Open Class Eye assistant'}
         aria-expanded={open}
         aria-controls="class-eye-chat"
         className="fixed bottom-5 right-4 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-[0_12px_32px_rgba(11,111,107,0.35)] transition-[transform,background-color,box-shadow] duration-200 ease-soft hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-[0_18px_44px_-12px_rgba(11,111,107,0.65)] hover:ring-4 hover:ring-brand/15 active:translate-y-0 active:scale-95 sm:right-6"
-        style={!open ? { animation: 'fabPulse 2.5s ease-in-out infinite' } : undefined}
+        style={!open && !hasOpenedEver ? { animation: 'fabPulse 2.5s ease-in-out infinite' } : undefined}
       >
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
