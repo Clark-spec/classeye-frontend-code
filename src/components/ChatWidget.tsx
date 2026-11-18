@@ -389,8 +389,11 @@ export function ChatWidget() {
 
     const history: AssistantTurn[] = messages
       .filter((message) => message.id !== 0)
-      .slice(-6)
-      .map(({ role, content }) => ({ role, content }));
+      .slice(-12)
+      .map(({ role, content }) => ({
+        role,
+        content: content.length > 3500 ? `${content.slice(0, 3497)}...` : content,
+      }));
 
     const userId = nextId.current++;
     const userMessage: ChatMessage = {
