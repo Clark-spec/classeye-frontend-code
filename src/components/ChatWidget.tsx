@@ -99,6 +99,12 @@ interface ChatSession {
   messages: ChatMessage[];
 }
 
+interface DeleteTarget {
+  type: 'single' | 'all';
+  sessionId?: string;
+  sessionTitle?: string;
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function formatSessionTime(timestamp: number): string {
   const diffMs   = Date.now() - timestamp;
@@ -305,6 +311,7 @@ export function ChatWidget() {
   const [showSuggestionsMenu, setShowSuggestionsMenu] = useState(false);
   const [showScrollDown, setShowScrollDown]           = useState(false);
   const [hasUnread, setHasUnread]                     = useState(false);
+  const [deleteTarget, setDeleteTarget]               = useState<DeleteTarget | null>(null);
   const isAdmin = user?.role === 'admin';
 
   // Stop FAB pulse animation once user has opened the widget
@@ -443,13 +450,18 @@ export function ChatWidget() {
     if (!open) return;
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        if (showHistory) setShowHistory(false);
-        else setOpen(false);
+        if (deleteTarget) {
+          setDeleteTarget(null);
+        } else if (showHistory) {
+          setShowHistory(false);
+        } else {
+          setOpen(false);
+        }
       }
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open, showHistory]);
+  }, [open, showHistory, deleteTarget]);
 
   // ── Session handlers ──────────────────────────────────────────────────────
   function startNewChat() {
@@ -462,6 +474,7 @@ export function ChatWidget() {
     setLoading(false);
     setShowHistory(false);
     setShowSuggestionsMenu(false);
+    setDeleteTarget(null);
     nextId.current = 1;
   }
 
@@ -475,19 +488,44 @@ export function ChatWidget() {
     setLoading(false);
     setShowHistory(false);
     setShowSuggestionsMenu(false);
+    setDeleteTarget(null);
     nextId.current = session.messages.length + 1;
   }
 
-  function deleteSession(sessionId: string, e: React.MouseEvent) {
+  function requestDeleteSession(e: React.MouseEvent, session: ChatSession) {
     e.stopPropagation();
-    const updated = sessions.filter((s) => s.id !== sessionId);
-    persistSessions(updated);
-    if (currentSessionId === sessionId) startNewChat();
+    setDeleteTarget({
+      type: 'single',
+      sessionId: session.id,
+      sessionTitle: session.title,
+    });
   }
 
-  function clearAllHistory() {
-    persistSessions([]);
-    startNewChat();
+  function requestClearAll() {
+    setDeleteTarget({
+      type: 'all',
+    });
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget) return;
+
+    if (deleteTarget.type === 'all') {
+      persistSessions([]);
+      startNewChat();
+    } else if (deleteTarget.sessionId) {
+      const targetId = deleteTarget.sessionId;
+      const updated = sessions.filter((s) => s.id !== targetId);
+      persistSessions(updated);
+      if (currentSessionId === targetId) {
+        startNewChat();
+      }
+    }
+    setDeleteTarget(null);
+  }
+
+  function cancelDelete() {
+    setDeleteTarget(null);
   }
 
   // ── Send ──────────────────────────────────────────────────────────────────
@@ -759,7 +797,7 @@ export function ChatWidget() {
 
                           <button
                             type="button"
-                            onClick={(e) => deleteSession(s.id, e)}
+                            onClick={(e) => requestDeleteSession(e, s)}
                             aria-label={`Delete chat: ${s.title}`}
                             title="Delete this chat"
                             className="rounded-lg p-1 text-ink-muted opacity-60 transition-all hover:bg-danger-light hover:text-danger group-hover:opacity-100"
@@ -776,7 +814,7 @@ export function ChatWidget() {
                   <div className="border-t border-brand-light/60 p-2 text-center">
                     <button
                       type="button"
-                      onClick={clearAllHistory}
+                      onClick={requestClearAll}
                       className="text-[11px] font-medium text-danger/80 hover:text-danger"
                     >
                       Clear all chat history
@@ -1023,6 +1061,67 @@ export function ChatWidget() {
                 </form>
               </>
             )}
+
+            {/* ── Delete Confirmation Modal ── */}
+            <AnimatePresence>
+              {deleteTarget && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  onClick={cancelDelete}
+                  className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs"
+                >
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0, y: 10 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.9, opacity: 0, y: 10 }}
+                    transition={SPRING_MSG}
+                    onClick={(e) => e.stopPropagation()}
+                    role="alertdialog"
+                    aria-modal="true"
+                    aria-labelledby="delete-dialog-title"
+                    className="w-full max-w-[21rem] rounded-2xl border border-white/80 bg-white/95 p-5 shadow-2xl"
+                  >
+                    <div className="flex flex-col items-center text-center">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-danger-light text-danger ring-4 ring-danger/10">
+                        <Trash2 size={20} aria-hidden="true" />
+                      </span>
+
+                      <h3 id="delete-dialog-title" className="mt-3 text-sm font-bold text-ink">
+                        {deleteTarget.type === 'all'
+                          ? 'Clear All Chat History?'
+                          : 'Delete Conversation?'}
+                      </h3>
+
+                      <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
+                        {deleteTarget.type === 'all'
+                          ? 'This will permanently remove all your saved chat conversations. This action cannot be undone.'
+                          : `"${deleteTarget.sessionTitle ?? 'This conversation'}" will be permanently removed.`}
+                      </p>
+
+                      <div className="mt-5 flex w-full items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={cancelDelete}
+                          className="flex-1 rounded-xl border border-brand-light bg-white py-2 text-xs font-semibold text-ink transition-colors hover:bg-brand-surface active:scale-95"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={confirmDelete}
+                          className="flex-1 rounded-xl bg-danger py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-danger/90 active:scale-95"
+                        >
+                          {deleteTarget.type === 'all' ? 'Clear All' : 'Delete'}
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.section>
         )}
       </AnimatePresence>
