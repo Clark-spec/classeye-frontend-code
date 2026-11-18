@@ -268,8 +268,7 @@ function TypingDots() {
 }
 
 // ─── Provider badge ──────────────────────────────────────────────────────────
-function ProviderBadge({ provider }: { provider?: string }) {
-  if (!provider || provider === 'heuristic') return null;
+function ProviderBadge() {
   return (
     <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-brand-dark">
       <Sparkles size={9} aria-hidden="true" />
@@ -830,7 +829,7 @@ export function ChatWidget() {
                             <div className="flex items-center gap-1.5">
                               {message.role === 'assistant' && (
                                 <>
-                                  <ProviderBadge provider={message.provider} />
+                                  <ProviderBadge />
                                   <CopyButton text={message.content} />
                                 </>
                               )}
